@@ -21,7 +21,7 @@ types:
 			payment_id: string
 			loan_id: number
 			payment: string
-			date: date
+			date: datetime
 			amount: number
 
 /loans:
@@ -31,24 +31,27 @@ types:
 			amount:
 				displayName: Loan Amount
 				type: number
+				format: float
 				description: Loan amount in dollars
 				example: 1000
 				required: true
 			term:
 				displayName: Loan Term
 				type: number
+				format: int
 				description: Number of months that will take until the loan gets paid-off
 				example: 12
 				required: true
 			rate:
 				displayName: Interest Rate
 				type: number
+				format: float
 				description: Interest rate as decimal
 				example: 0.05
 				required: true
 			date:
 				displayName: Date of Loan
-				type: date
+				type: datetime
 				description: When the loan was requested (origination date as an ISO 8601 string)
 				example: "2019-05-09 03:18Z"
 				required: true
@@ -77,13 +80,14 @@ types:
 					required: true
 				date:
 					displayName: Date of Payment
-					type: date
+					type: datetime
 					description: Payment date
 					example: "2019-05-07 04:18Z"
 					required: true
 				amount:
 					displayName: Amount of Payment
 					type: number
+					format: float
 					description: Amount of the payment made or missed in dollars
 					example: 85.60
 					required: true
@@ -106,7 +110,7 @@ types:
 			description: Get the volume of outstanding debt (i.e., debt yet to be paid) at some point in time.
 			queryParameters:
 				date:
-					type: date
+					type: datetime
 					description: Loan balance until this date
 			responses:
 				200:

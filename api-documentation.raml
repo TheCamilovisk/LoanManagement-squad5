@@ -1,5 +1,5 @@
 #%RAML 1.0
----
+
 title: Loan Management System
 version: v1
 
@@ -8,7 +8,7 @@ types:
 		type: object
 		discriminator: loan_id
 		properties:
-			loan_id: number
+			loan_id: string
 			amount: number
 			term: number
 			rate: number
@@ -18,7 +18,7 @@ types:
 		type: object
 		discriminator: payment_id
 		properties:
-			payment_id: number
+			payment_id: string
 			loan_id: number
 			payment: string
 			date: date
@@ -26,6 +26,7 @@ types:
 
 /loans:
 	post:
+		description: Create a loan application. Loans are automatically accepted.
 		queryParameters:
 			amount:
 				displayName: Loan Amount
@@ -51,8 +52,22 @@ types:
 				description: When the loan was requested (origination date as an ISO 8601 string)
 				example: "2019-05-09 03:18Z"
 				required: true
+		responses:
+			200:
+				body:
+					application/json:
+						example: |
+						{
+							"data": {
+								"loan_id": "000-0000-0000-0000",
+								"installment": 85.60
+							},
+							"success": true,
+							"status": 200
+						}
 	/{id}/payments:
 		post:
+			description: Create a record of a payment made or missed.
 			queryParameters:
 				payment:
 					displayName: Payment Status
@@ -72,10 +87,36 @@ types:
 					description: Amount of the payment made or missed in dollars
 					example: 85.60
 					required: true
+			responses:
+				200:
+					body:
+						application/json:
+							example: |
+							{
+								"data": {
+									"payment": "made",
+									"date": "2019-05-07 04:18Z",
+									"amount": 85.60
+								},
+								"success": true,
+								"status": 200
+							}
 	/{id}/balance:
 		post:
+			description: Get the volume of outstanding debt (i.e., debt yet to be paid) at some point in time.
 			queryParameters:
 				date:
 					type: date
 					description: Loan balance until this date
-
+			responses:
+				200:
+					body:
+						application/json:
+							example: |
+							{
+								"data": {
+									"balance": 40
+								}
+								"success": true,
+								"status": 200
+							}

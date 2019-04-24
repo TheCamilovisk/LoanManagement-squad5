@@ -1,0 +1,81 @@
+#%RAML 1.0
+---
+title: Loan Management System
+version: v1
+
+types:
+	Loan:
+		type: object
+		discriminator: loan_id
+		properties:
+			loan_id: number
+			amount: number
+			term: number
+			rate: number
+			installment: number
+			date: date
+	Payment:
+		type: object
+		discriminator: payment_id
+		properties:
+			payment_id: number
+			loan_id: number
+			payment: string
+			date: date
+			amount: number
+
+/loans:
+	post:
+		queryParameters:
+			amount:
+				displayName: Loan Amount
+				type: number
+				description: Loan amount in dollars
+				example: 1000
+				required: true
+			term:
+				displayName: Loan Term
+				type: number
+				description: Number of months that will take until the loan gets paid-off
+				example: 12
+				required: true
+			rate:
+				displayName: Interest Rate
+				type: number
+				description: Interest rate as decimal
+				example: 0.05
+				required: true
+			date:
+				displayName: Date of Loan
+				type: date
+				description: When the loan was requested (origination date as an ISO 8601 string)
+				example: "2019-05-09 03:18Z"
+				required: true
+	/{id}/payments:
+		post:
+			queryParameters:
+				payment:
+					displayName: Payment Status
+					type: string
+					description: Type of payment: made or missed
+					example: "made"
+					required: true
+				date:
+					displayName: Date of Payment
+					type: date
+					description: Payment date
+					example: "2019-05-07 04:18Z"
+					required: true
+				amount:
+					displayName: Amount of Payment
+					type: number
+					description: Amount of the payment made or missed in dollars
+					example: 85.60
+					required: true
+	/{id}/balance:
+		post:
+			queryParameters:
+				date:
+					type: date
+					description: Loan balance until this date
+

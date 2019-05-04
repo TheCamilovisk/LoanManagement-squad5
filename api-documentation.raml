@@ -1,6 +1,25 @@
 #%RAML 1.0
-title: Loan Management System
-
+title: Loan API
+baseUri: https://squad5.hero
+protocols: [ HTTP, HTTPS ]
+mediaType:  application/json
+description: API to manage the loan payments control system from a fintech
+version: 0.0.1
+securitySchemes:
+  JWT:
+    description: Authentic this to any method that needs a valid JWT to be set.
+    type: x-{other}
+    describedBy:
+      headers:
+        Authorization:
+            description: X-AuthToken
+            type: string
+            required: true
+      responses:
+        401:
+          description: Authentication problem (JWT not set or expired)
+    settings:
+      roles: []
 types:
   Loan:
     type: object
@@ -33,11 +52,11 @@ types:
       loan_id: 1
       payment: "made"
       date: "2019-05-10T04:18:00Z"
-      amount: 85.60
-/loans:
+      amount: 85.60/loans:
   post:
     description: Create a loan application. Loans are automatically accepted.
-    body:
+    securedBy: JWT
+   body:
       application/json:
         properties:
           amount:
@@ -73,28 +92,22 @@ types:
           rate: 0.05
           date: "2019-05-09T03:18:00Z"
     responses:
-      201:
-        body:
-          application/json:
-            example:
-              loan_id: 1
-              installment: 85.60
-  get:
-    description: Retrieve all the loan applications.
-    responses:
-      200:
-        body:
-          application/json:
-            example:
-              loan_id: 1
-              amount: 1000
-              term: 12
-              rate: 0.05
-              date: "2019-05-09T03:18:00Z"
-              installment: 85.6
+        201:
+          body:
+            application/json:
+              example: {"id": 1, "installment": 85.60 }
+        401:
+          body:
+            application/json:
+              example: {"message": "Forbiden"}
+        404:
+          body:
+            application/json:
+              example: {"message": "Loan not found"}
   /{id}/payments:
     post:
       description: Create a record of a payment made or missed.
+      securedBy: JWT
       body:
         application/json:
           properties:
@@ -121,17 +134,20 @@ types:
             payment: "made"
             date: "2019-05-10T04:18:00Z"
             amount: 85.60
-      responses: 
+      responses:
         201:
           body:
             application/json:
-              example:
-                payment_id: 1
-                loan_id: 1
-                payment: "made"
-                date: "2019-05-07T04:18:00Z"
-                amount: 85.60
-    get:
+        401:
+          body:
+            application/json:
+              example: {"message": "Forbiden"}
+
+        404:
+          body:
+            application/json:
+              example: {"message": "Loan not found"}
+   get:
       description: Retrieve all the payments for an specific loan.
       responses:
         200:
@@ -143,22 +159,28 @@ types:
                 payment: "made"
                 date: "2019-05-07T04:18:00Z"
                 amount: 85.60
+
   /{id}/balance:
-    post:
-      description: Get the volume of outstanding debt (i.e. debt yet to be paid) at some point in time.
-      body:
-        application/json:
-          properties:
-            date:
-              displayName: Date of Outstanding Debt
-              type: datetime
-              description: Loan balance until this date
-              example: "2019-06-04T12:30:00Z"
-          example:
-            date: "2019-06-04T12:30:00Z"
+    get:
+      description: Get the volume of outstanding debt (i.e., debt yet to be paid) at some point in time.
+      securedBy: JWT
+      queryParameters:
+        date:
+          description: "The access token provided by the authentication application"
+          example: date=2017-09-05
+          required: true
+          type: string
       responses:
         200:
           body:
             application/json:
-              example:
-                balance: 40
+              example: {"balance": 49 }
+        401:
+          body:
+            application/json:
+              example: {"message": "Forbiden"}
+
+        404:
+          body:
+            application/json:
+              example: {"message": "Loan not found"}

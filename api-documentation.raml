@@ -1,0 +1,188 @@
+#%RAML 1.0
+title: Loan API
+baseUri: https://squad5.hero
+protocols: [ HTTP, HTTPS ]
+mediaType:  application/json
+description: API to manage the loan payments control system from a fintech
+version: 0.0.1
+securitySchemes:
+  JWT:
+    description: Authentic this to any method that needs a valid JWT to be set.
+    type: x-{other}
+    describedBy:
+      headers:
+        Authorization:
+            description: X-AuthToken
+            type: string
+            required: true
+      responses:
+        401:
+          description: Authentication problem (JWT not set or expired)
+    settings:
+      roles: []
+types:
+  Loan:
+    type: object
+    discriminator: loan_id
+    properties:
+      loan_id: string
+      amount: number
+      term: number
+      rate: number
+      installment: number
+      date: datetime
+    example:
+      loan_id: "3d0ca315-aff9–4fc2-be61–3b76b9a2d798"
+      amount: 1000
+      term: 12
+      rate: 0.05
+      installment: 85.60
+      date: "2019-05-09T03:18:00Z"
+  Payment:
+    type: object
+    discriminator: payment_id
+    properties:
+      payment_id: string
+      loan_id: string
+      payment: boolean
+      date: datetime
+      amount: number
+    example:
+      payment_id: "32e5fe54-e000-476e-b05c-737204e41bd7"
+      loan_id: "3d0ca315-aff9–4fc2-be61–3b76b9a2d798"
+      payment: true
+      date: "2019-05-10T04:18:00Z"
+      amount: 85.6
+/loans:
+  post:
+    description: Create a loan application. Loans are automatically accepted.
+    securedBy: JWT
+    body:
+      application/json:
+        properties:
+          amount:
+            displayName: Loan Amount
+            type: number
+            format: float
+            description: Loan amount in dollars
+            example: 1000
+            required: true
+          term:
+            displayName: Loan Term
+            type: number
+            format: int
+            description: Number of months that will take until the loan gets paid-off
+            example: 12
+            required: true
+          rate:
+            displayName: Interest Rate
+            type: number
+            format: float
+            description: Interest rate as decimal
+            example: 0.05
+            required: true
+          date:
+            displayName: Date of Loan
+            type: datetime
+            description: When the loan was requested (origination date as an ISO 8601 string)
+            example: "2019-05-09T03:18:00Z"
+            required: true
+        example:
+          amount: 1000
+          term: 12
+          rate: 0.05
+          date: "2019-05-09T03:18:00Z"
+    responses:
+        201:
+          body:
+            application/json:
+              example: {"loan_id": "3d0ca315-aff9–4fc2-be61–3b76b9a2d798", "installment": 85.60 }
+        401:
+          body:
+            application/json:
+              example: {"message": "Forbiden"}
+        404:
+          body:
+            application/json:
+              example: {"message": "Loan not found"}
+  get:
+    description: Retrieve all the loans.
+    securedBy: JWT
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: {"loan_id": "3d0ca315-aff9–4fc2-be61–3b76b9a2d798", "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
+  /{id}/payments:
+    post:
+      description: Create a record of a payment made or missed.
+      securedBy: JWT
+      body:
+        application/json:
+          properties:
+            payment:
+              displayName: Payment Status
+              type: boolean
+              description: Type of payment (True for made or False for missed)
+              example: true
+              required: true
+            date:
+              displayName: Date of Payment
+              type: datetime
+              description: Payment date
+              example: "2019-05-10T04:18:00Z"
+              required: true
+            amount:
+              displayName: Amount of Payment
+              type: number
+              format: float
+              description: Amount of payment made or missed in dollars
+              example: 85.60
+              required: true
+          example:
+            payment: true
+            date: "2019-05-10T04:18:00Z"
+            amount: 85.60
+      responses:
+        201:
+          body:
+            application/json:
+        401:
+          body:
+            application/json:
+              example: {"message": "Forbiden"}
+        404:
+          body:
+            application/json:
+              example: {"message": "Loan not found"}
+    get:
+      description: Retrieve all the payments for an specific loan.
+      securedBy: JWT
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"payment_id": "32e5fe54-e000-476e-b05c-737204e41bd7", "payment": true, "date": "2019-05-07T04:18:00Z", "amount": 85.60}
+  /{id}/balance:
+    get:
+      description: Get the volume of outstanding debt (i.e., debt yet to be paid) at some point in time.
+      securedBy: JWT
+      queryParameters:
+        date:
+          description: "The access token provided by the authentication application"
+          example: date=2017-09-05
+          required: true
+          type: string
+      responses:
+        200:
+          body:
+            application/json:
+              example: {"balance": 49 }
+        401:
+          body:
+            application/json:
+              example: {"message": "Forbiden"}
+        404:
+          body:
+            application/json:
+              example: {"message": "Loan not found"}

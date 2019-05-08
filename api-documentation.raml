@@ -21,6 +21,23 @@ securitySchemes:
     settings:
       roles: []
 types:
+  Client:
+    type: object
+    discriminator: client_id
+    properties: 
+      client_id: string
+      name: string
+      surname: string
+      email: string
+      telephone: string
+      cpf: string
+    example:
+      client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817"
+      name: "Felicity"
+      surname: "Jones"
+      email: "felicity@gmail.com"
+      telephone: "11984345678"
+      cpf: "34598712387"
   Loan:
     type: object
     discriminator: loan_id
@@ -53,6 +70,66 @@ types:
       payment: true
       date: "2019-05-10T04:18:00Z"
       amount: 85.6
+/clients:
+  post:
+    description: Create a client in the system.
+    securedBy: JWT
+    body:
+      application/json:
+      properties:
+        name:
+          displayName: Client's Name
+          type: string
+          description: The client's name
+          example: "Felicity"
+          required: true
+        surname:
+          displayName: Client's Surname
+          type: string
+          description: The client's surname
+          example: "Jones"
+          required: true
+        email:
+          displayName: Client's E-mail
+          type: string
+          description: The client's email
+          example: "felicity@gmail.com"
+          required: true
+        telephone:
+          displayName: Client's Telephone
+          type: string
+          description: The client's telephone
+          example: "11984345678"
+          required: false
+        cpf:
+          displayName: Client's CPF
+          type: string
+          description: The client's CPF
+          example: "34598712387"
+          required: true
+      example:
+        name: "Felicity"
+        surname: "Jones"
+        email: "felicity@gmail.com"
+        telephone: "11984345678"
+        cpf: "34598712387"
+    responses:
+      201:
+        body:
+          application/json:
+            example: {"client_id": "0c7ea244-24e2-478f-9278-2e051a7ba817"}
+      401:
+        body:
+          application/json:
+            example: {"message": "Forbidden"}
+  get:
+    description: Retrieve all the clients.
+    securedBy: JWT
+    responses:
+      200:
+        body:
+          application/json:
+            example: {"client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817", "name": "Felicity", "surname": "Jones", "email": "felicity@gmail.com", "telephone": "11984345678", "cpf": "34598712387"}
 /loans:
   post:
     description: Create a loan application. Loans are automatically accepted.
@@ -60,6 +137,12 @@ types:
     body:
       application/json:
         properties:
+          client_id:
+            displayName: Client's ID
+            type: string
+            description: Client's unique identification
+            example: "0c7ea244-24e2-478f-9278-2e051a7ba817"
+            required: true
           amount:
             displayName: Loan Amount
             type: number
@@ -88,6 +171,7 @@ types:
             example: "2019-05-09T03:18:00Z"
             required: true
         example:
+          client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817"
           amount: 1000
           term: 12
           rate: 0.05
@@ -100,7 +184,7 @@ types:
         401:
           body:
             application/json:
-              example: {"message": "Forbiden"}
+              example: {"message": "Forbidden"}
         404:
           body:
             application/json:
@@ -150,7 +234,7 @@ types:
         401:
           body:
             application/json:
-              example: {"message": "Forbiden"}
+              example: {"message": "Forbidden"}
         404:
           body:
             application/json:
@@ -181,7 +265,7 @@ types:
         401:
           body:
             application/json:
-              example: {"message": "Forbiden"}
+              example: {"message": "Forbidden"}
         404:
           body:
             application/json:

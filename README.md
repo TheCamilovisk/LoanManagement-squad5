@@ -56,7 +56,7 @@ client_id: unique id of a client.
 
 ### POST /loans
 **Summary**
-Create a loan application. Loans are automatically accepted.
+Create a loan application. Loans acceptance policies are described on the Business Rules above.
 
 **Payload**
 <pre><code>

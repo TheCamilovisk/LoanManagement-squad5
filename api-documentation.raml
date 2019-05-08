@@ -130,6 +130,15 @@ types:
         body:
           application/json:
             example: {"client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817", "name": "Felicity", "surname": "Jones", "email": "felicity@gmail.com", "telephone": "11984345678", "cpf": "34598712387"}
+  /{id}/loans:
+    get:
+      description: Retrieve all the loans of a specific client.
+      securedBy: JWT
+      responses: 
+        200:
+          body:
+            application/json:
+              example: {"loan_id": "3d0ca315-aff9–4fc2-be61–3b76b9a2d798", "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
 /loans:
   post:
     description: Create a loan application. Loans are automatically accepted.

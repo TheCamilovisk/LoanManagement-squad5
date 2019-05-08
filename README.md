@@ -24,11 +24,11 @@ Create a client in the system.
 
 **Payload**
 <pre><code>
-name: the client name.
-surname: the client surname.
-email: the client email.
-telephone: the client telephone.
-cpf: the client (Cadastro de Pessoa Física) identification.
+name: the client's name.
+surname: the client's surname.
+email: the client's email.
+telephone: the client's telephone.
+cpf: the client's (Cadastro de Pessoa Física) identification.
 </pre></code>
 
 **Example of sent data**

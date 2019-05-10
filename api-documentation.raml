@@ -25,14 +25,14 @@ types:
     type: object
     discriminator: client_id
     properties: 
-      client_id: string
+      client_id: integer
       name: string
       surname: string
       email: string
       telephone: string
       cpf: string
     example:
-      client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817"
+      client_id: 1
       name: "Felicity"
       surname: "Jones"
       email: "felicity@gmail.com"
@@ -42,16 +42,16 @@ types:
     type: object
     discriminator: loan_id
     properties:
-      loan_id: string
-      client_id: string
+      loan_id: integer
+      client_id: integer
       amount: number
       term: number
       rate: number
       installment: number
       date: datetime
     example:
-      loan_id: "3d0ca315-aff9–4fc2-be61–3b76b9a2d798"
-      client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817"
+      loan_id: 1
+      client_id: 1
       amount: 1000
       term: 12
       rate: 0.05
@@ -61,14 +61,14 @@ types:
     type: object
     discriminator: payment_id
     properties:
-      payment_id: string
-      loan_id: string
+      payment_id: integer
+      loan_id: integer
       payment: boolean
       date: datetime
       amount: number
     example:
-      payment_id: "32e5fe54-e000-476e-b05c-737204e41bd7"
-      loan_id: "3d0ca315-aff9–4fc2-be61–3b76b9a2d798"
+      payment_id: 1
+      loan_id: 1
       payment: true
       date: "2019-05-10T04:18:00Z"
       amount: 85.6
@@ -119,7 +119,7 @@ types:
       201:
         body:
           application/json:
-            example: {"client_id": "0c7ea244-24e2-478f-9278-2e051a7ba817"}
+            example: {"client_id": 1}
       401:
         body:
           application/json:
@@ -131,7 +131,7 @@ types:
       200:
         body:
           application/json:
-            example: {"client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817", "name": "Felicity", "surname": "Jones", "email": "felicity@gmail.com", "telephone": "11984345678", "cpf": "34598712387"}
+            example: {"client_id: 1, "name": "Felicity", "surname": "Jones", "email": "felicity@gmail.com", "telephone": "11984345678", "cpf": "34598712387"}
   /{id}/loans:
     get:
       description: Retrieve all the loans of a specific client.
@@ -140,7 +140,7 @@ types:
         200:
           body:
             application/json:
-              example: {"loan_id": "3d0ca315-aff9–4fc2-be61–3b76b9a2d798", "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
+              example: {"loan_id": 1, "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
 /loans:
   post:
     description: Create a loan application. Loans are automatically accepted.
@@ -150,9 +150,9 @@ types:
         properties:
           client_id:
             displayName: Client's ID
-            type: string
+            type: integer
             description: Client's unique identification
-            example: "0c7ea244-24e2-478f-9278-2e051a7ba817"
+            example: 1
             required: true
           amount:
             displayName: Loan Amount
@@ -182,7 +182,7 @@ types:
             example: "2019-05-09T03:18:00Z"
             required: true
         example:
-          client_id: "0c7ea244-24e2-478f-9278-2e051a7ba817"
+          client_id: 1
           amount: 1000
           term: 12
           rate: 0.05
@@ -191,7 +191,7 @@ types:
         201:
           body:
             application/json:
-              example: {"loan_id": "3d0ca315-aff9–4fc2-be61–3b76b9a2d798", "installment": 85.60 }
+              example: {"loan_id": 1, "installment": 85.60 }
         401:
           body:
             application/json:
@@ -207,7 +207,7 @@ types:
       200:
         body: 
           application/json:
-            example: {"loan_id": "3d0ca315-aff9–4fc2-be61–3b76b9a2d798", "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
+            example: {"loan_id": 1, "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
   /{id}/payments:
     post:
       description: Create a record of a payment made or missed.
@@ -257,7 +257,7 @@ types:
         200:
           body:
             application/json:
-              example: {"payment_id": "32e5fe54-e000-476e-b05c-737204e41bd7", "payment": true, "date": "2019-05-07T04:18:00Z", "amount": 85.60}
+              example: {"payment_id": 1, "payment": true, "date": "2019-05-07T04:18:00Z", "amount": 85.60}
   /{id}/balance:
     get:
       description: Get the volume of outstanding debt (i.e., debt yet to be paid) at some point in time.

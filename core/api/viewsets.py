@@ -17,7 +17,11 @@ class ClientViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save(user=request.user)
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(
+                serializer.data, 
+                status=status.HTTP_201_CREATED, 
+                headers=headers
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -31,9 +35,16 @@ class LoanViewSet(ModelViewSet):
             amount = float(request.data['amount'])
             term = int(request.data['term'])
             rate = float(request.data['rate'])
-            serializer.save(user=request.user, installment=calc_installment(amount, term, rate))
+            serializer.save(
+                user=request.user, 
+                installment=calc_installment(amount, term, rate)
+                )
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(
+                serializer.data, 
+                status=status.HTTP_201_CREATED, 
+                headers=headers
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -46,5 +57,9 @@ class PaymentViewSet(ModelViewSet):
         if serializer.is_valid():
             serializer.save(user=request.user)
             headers = self.get_success_headers(serializer.data)
-            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+            return Response(
+                serializer.data, 
+                status=status.HTTP_201_CREATED, 
+                headers=headers
+                )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

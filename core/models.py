@@ -17,7 +17,7 @@ class Loan(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     term = models.IntegerField()
     rate = models.FloatField()
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
     installment = models.DecimalField(decimal_places=2, max_digits=10, blank=True, null=True)
 
 
@@ -25,5 +25,5 @@ class Payment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     payment = models.CharField(max_length=6)
-    date = models.DateField(auto_now_add=True)
+    date = models.DateTimeField(auto_now_add=True)
     amount = models.DecimalField(decimal_places=2, max_digits=10)

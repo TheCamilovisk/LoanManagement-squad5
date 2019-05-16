@@ -32,6 +32,18 @@ class LoanSerializer(ModelSerializer):
         return Loan.objects.create(**validated_data)
 
 
+class LoanCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Loan
+        fields = (
+            'client',
+            'amount',
+            'term',
+            'rate',
+            'date',
+        )
+
+
 class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment

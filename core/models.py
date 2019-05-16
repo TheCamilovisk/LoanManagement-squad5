@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
+from core import validators
 
 
 class Client(models.Model):
@@ -17,7 +18,10 @@ class Client(models.Model):
 class Loan(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     client = models.ForeignKey(Client, on_delete=models.PROTECT)
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    amount = models.DecimalField(
+        decimal_places=2, max_digits=10, 
+        validators=[validators.validate_amount]
+        )
     term = models.IntegerField()
     rate = models.FloatField()
     date = models.DateTimeField(auto_now_add=True)

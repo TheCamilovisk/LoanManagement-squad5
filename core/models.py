@@ -25,7 +25,7 @@ class Loan(models.Model):
         validators=[MinMoneyValidator(1)],
         default_currency='USD'
         )
-    term = models.IntegerField()
+    term = models.IntegerField(validators=[validators.validate_term])
     rate = models.FloatField()
     date = models.DateTimeField(auto_now_add=True)
     installment = MoneyField(

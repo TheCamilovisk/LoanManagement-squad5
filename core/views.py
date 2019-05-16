@@ -2,14 +2,14 @@ from django.shortcuts import render
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from core.api.serializers import LoanSerializer, ClientSerializer, PaymentSerializer
-from core.utils import calc_installment
+from core.api.serializers import LoanSerializer, ClientSerializer, PaymentSerializer, LoanCreateSerializer
 from core.models import Client, Loan, Payment
 
 @api_view(['GET', 'POST'])
 def loans(request, format=None):
     if request.method == 'POST':
-        serializer = LoanSerializer(data=request.data)
+        serializer = LoanCreateSerializer(data=request.data)
+        #4
         if serializer.is_valid():
             amount = float(request.data['amount'])
             term = int(request.data['term'])
@@ -17,11 +17,11 @@ def loans(request, format=None):
             r = rate/term
             installment = (r + r / ((1 + r) ** term - 1)) * amount
             serializer.save(user=request.user, installment=installment)
-            headers = self.get_sucess_headers(serializer.data)
+            #headers = self.get_sucess_headers(serializer.data)
             return Response(
                 serializer.data,
                 status=status.HTTP_201_CREATED,
-                headers=headers
+            #    headers=headers
             )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':

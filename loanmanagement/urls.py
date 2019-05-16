@@ -15,15 +15,13 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from core.api.viewsets import ClientViewSet, LoanViewSet, PaymentViewSet
 from django.conf.urls import include
-from rest_framework import routers
+from core import views
 
-router = routers.DefaultRouter()
-router.register(r'clients', ClientViewSet, basename='clients')
-router.register(r'loans', LoanViewSet, basename='loans')
-router.register(r'payments', PaymentViewSet, basename='payments')
 urlpatterns = [
-    path('', include(router.urls)),
-    path('admin/', admin.site.urls),
+    path('loans/', views.loans),
+    path('loans/<int:pk>/payments/', views.payments),
+    path('loans/<int:pk>/balance/', views.balance),
+    path('clients/', views.clients),
+    path('admin/', admin.site.urls)
 ]

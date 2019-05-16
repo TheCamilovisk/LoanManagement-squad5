@@ -1,8 +1,8 @@
-from rest_framework import serializers
+from rest_framework.serializers import ModelSerializer
 from core.models import Client, Loan, Payment
 
 
-class ClientSerializer(serializers.Serializer):
+class ClientSerializer(ModelSerializer):
     class Meta:
         model = Client
         fields = (
@@ -15,7 +15,7 @@ class ClientSerializer(serializers.Serializer):
         )
 
 
-class LoanSerializer(serializers.Serializer):
+class LoanSerializer(ModelSerializer):
     class Meta:
         model = Loan
         fields = (
@@ -27,9 +27,24 @@ class LoanSerializer(serializers.Serializer):
             'date',
             'installment'
         )
+    
+    def create(self, validated_data):
+        return Loan.objects.create(**validated_data)
 
 
-class PaymentSerializer(serializers.Serializer):
+class LoanCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Loan
+        fields = (
+            'client',
+            'amount',
+            'term',
+            'rate',
+            'date',
+        )
+
+
+class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
         fields = (

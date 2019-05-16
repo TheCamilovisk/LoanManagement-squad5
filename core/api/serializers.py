@@ -22,6 +22,7 @@ class LoanSerializer(ModelSerializer):
             'user',
             'client',
             'amount',
+            'amount_currency',
             'term',
             'rate',
             'date',

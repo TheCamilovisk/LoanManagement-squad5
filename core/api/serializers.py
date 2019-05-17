@@ -6,7 +6,6 @@ class ClientSerializer(ModelSerializer):
     class Meta:
         model = Client
         fields = (
-            'user',
             'name',
             'surname',
             'email',
@@ -19,7 +18,6 @@ class LoanSerializer(ModelSerializer):
     class Meta:
         model = Loan
         fields = (
-            'user',
             'client',
             'amount',
             'term',
@@ -48,8 +46,8 @@ class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
         fields = (
-            'loan',
-            'user',
+            'id',
+            'loan_id',
             'payment',
             'date',
             'amount'

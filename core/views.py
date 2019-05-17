@@ -1,6 +1,7 @@
 from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from decimal import Decimal
 
 from core.api.serializers import (
     ClientSerializer,
@@ -24,8 +25,14 @@ def loans(request, format=None):
                     serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
         elif client_status == 'good_payer':
-            request.data['rate'] = request.data['rate'] - 0.02
-            serializer = LoanCreateSerializer(data=request.data)
+            new_rate = str(Decimal(request.data['rate']) - Decimal(0.02))
+            new_data = {
+                'amount': request.data['amount'],
+                'term': request.data['term'],
+                'client': request.data['client'],
+                'rate': new_rate
+            }
+            serializer = LoanCreateSerializer(data=new_data)
             if serializer.is_valid():
                 return calc_installment(serializer, request)
             else:
@@ -33,8 +40,14 @@ def loans(request, format=None):
                     serializer.errors, status=status.HTTP_400_BAD_REQUEST
                 )
         elif client_status == 'bad_payer':
-            request.data['rate'] = request.data['rate'] + 0.04
-            serializer = LoanCreateSerializer(data=request.data)
+            new_rate = str(Decimal(request.data['rate']) + Decimal(0.04))
+            new_data = {
+                'amount': request.data['amount'],
+                'term': request.data['term'],
+                'client': request.data['client'],
+                'rate': new_rate
+            }
+            serializer = LoanCreateSerializer(data=new_data)
             if serializer.is_valid():
                 return calc_installment(serializer, request)
             else:
@@ -55,7 +68,7 @@ def calc_number_of_missed_payments(client_id):
     try:
         last_loan = Loan.objects.filter(client=client_id).order_by('-id')[0]
         last_loan_payments = Payment.objects.filter(
-            loan=last_loan['id'], payment='missed'
+            loan=last_loan.id, payment='missed'
             )
         number_of_missed_payments = len(last_loan_payments)
         if number_of_missed_payments == 0:

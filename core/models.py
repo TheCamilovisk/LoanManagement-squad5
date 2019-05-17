@@ -1,6 +1,9 @@
 from django.db import models
 from django.contrib.auth.models import User
 from core import validators
+from djmoney.models.fields import MoneyField
+from djmoney.models.validators import MinMoneyValidator
+
 
 
 class Client(models.Model):
@@ -18,15 +21,17 @@ class Client(models.Model):
 class Loan(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     client = models.ForeignKey(Client, on_delete=models.PROTECT)
-    amount = models.DecimalField(
+    amount = MoneyField(
         decimal_places=2, max_digits=10, 
-        validators=[validators.validate_amount]
+        validators=[MinMoneyValidator(1)],
+        default_currency='USD'
         )
-    term = models.IntegerField()
+    term = models.IntegerField(validators=[validators.validate_term])
     rate = models.FloatField()
     date = models.DateTimeField(auto_now_add=True)
-    installment = models.DecimalField(
-        decimal_places=2, max_digits=10, blank=True, null=True
+    installment = MoneyField(
+        decimal_places=2, max_digits=10, blank=True, null=True,
+        default_currency='USD'
         )
 
     def __str__(self):

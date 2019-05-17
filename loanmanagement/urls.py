@@ -23,5 +23,5 @@ urlpatterns = [
     path('loans/<int:pk>/payments/', views.payments),
     path('loans/<int:pk>/balance/', views.balance),
     path('clients/', views.clients),
-    path('admin/', admin.site.urls)
+    path('admin/', admin.site.urls),
 ]

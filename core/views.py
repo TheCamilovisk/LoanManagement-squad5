@@ -1,7 +1,13 @@
 from rest_framework import status
-from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from core.api.serializers import LoanSerializer, ClientSerializer, PaymentSerializer, LoanCreateSerializer
+from rest_framework.response import Response
+
+from core.api.serializers import (
+    ClientSerializer,
+    LoanCreateSerializer,
+    LoanSerializer,
+    PaymentSerializer,
+)
 from core.models import Client, Loan, Payment
 
 
@@ -9,18 +15,13 @@ from core.models import Client, Loan, Payment
 def loans(request, format=None):
     if request.method == 'POST':
         serializer = LoanCreateSerializer(data=request.data)
-        #4
         if serializer.is_valid():
             amount = float(request.data['amount'])
             term = int(request.data['term'])
             rate = float(request.data['rate'])
-            r = rate/term
+            r = rate / term
             installment = (r + r / ((1 + r) ** term - 1)) * amount
             serializer.save(user=request.user, installment=installment)
-            return Response(
-                serializer.data,
-                status=status.HTTP_201_CREATED,
-            )
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':
         loans = Loan.objects.all()
@@ -35,7 +36,10 @@ def clients(request, format=None):
         serializer = ClientSerializer(clients, many=True)
         return Response(serializer.data)
     elif request.method == 'POST':
-        pass #TODO
+        serializer = ClientSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'POST'])
@@ -45,7 +49,7 @@ def payments(request, pk, format=None):
         serializer = PaymentSerializer(payments, many=True)
         return Response(serializer.data)
     elif request.method == 'POST':
-        pass #TODO
+        pass  # TODO
 
 
 @api_view(['GET'])

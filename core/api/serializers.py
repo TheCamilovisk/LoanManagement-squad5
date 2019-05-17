@@ -13,6 +13,7 @@ class LoanSerializer(ModelSerializer):
         model = Loan
         fields = ('user', 'client', 'amount', 'term', 'rate', 'date', 'installment')
 
+
     def create(self, validated_data):
         return Loan.objects.create(**validated_data)
 

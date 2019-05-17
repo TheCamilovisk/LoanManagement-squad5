@@ -48,9 +48,9 @@ def payments(request, pk, format=None):
         pass #TODO
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def balance(request, pk, format=None):
-    if request.method == 'POST':
+    if request.method == 'GET':
         try:
             loan = Loan.objects.get(pk=pk)
             payments_made = Payment.objects.filter(loan=pk).filter(payment='made')

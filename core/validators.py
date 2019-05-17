@@ -6,6 +6,7 @@ def validate_term(term):
             'Number of terms has to be a positive integer number.'
             )
 
+
 def validate_amount(amount):
     if amount <= 0:
         raise ValidationError(

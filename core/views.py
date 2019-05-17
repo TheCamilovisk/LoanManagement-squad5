@@ -22,7 +22,6 @@ def loans(request, format=None):
             r = rate / term
             installment = (r + r / ((1 + r) ** term - 1)) * amount
             serializer.save(user=request.user, installment=installment)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'GET':
         loans = Loan.objects.all()
@@ -53,7 +52,14 @@ def payments(request, pk, format=None):
         pass  # TODO
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def balance(request, pk, format=None):
-    if request.method == 'POST':
-        pass  # TODO
+    if request.method == 'GET':
+        try:
+            loan = Loan.objects.get(pk=pk)
+            payments_made = Payment.objects.filter(loan=pk).filter(payment='made')
+            balance_value = loan.term * loan.installment - len(payments_made) * loan.installment
+            context = {'balance': balance_value}
+        except:
+            context = {'balance': 'Loan not found'}
+        return Response(context)

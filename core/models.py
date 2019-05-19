@@ -5,7 +5,6 @@ from djmoney.models.fields import MoneyField
 from djmoney.models.validators import MinMoneyValidator
 
 
-
 class Client(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     name = models.CharField(max_length=100)

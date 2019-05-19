@@ -114,7 +114,14 @@ def payments(request, pk, format=None):
         pass  # TODO
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def balance(request, pk, format=None):
-    if request.method == 'POST':
-        pass  # TODO
+    if request.method == 'GET':
+        try:
+            loan = Loan.objects.get(pk=pk)
+            payments_made = Payment.objects.filter(loan=pk).filter(payment='made')
+            balance_value = loan.term * loan.installment - len(payments_made) * loan.installment
+            context = {'balance': balance_value}
+        except:
+            context = {'balance': 'Loan not found'}
+        return Response(context)

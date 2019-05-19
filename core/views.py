@@ -3,7 +3,7 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from decimal import Decimal
 
-from core.api.serializers import (
+from core.serializers import (
     ClientSerializer,
     LoanCreateSerializer,
     LoanSerializer,
@@ -100,8 +100,8 @@ def clients(request, format=None):
     elif request.method == 'POST':
         serializer = ClientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        serializer.save(user=request.user)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        client = serializer.save(user=request.user)
+        return Response({'client_id': client.id}, status=status.HTTP_201_CREATED)
 
 
 @api_view(['GET', 'POST'])

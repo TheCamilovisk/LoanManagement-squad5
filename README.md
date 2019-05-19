@@ -1,5 +1,8 @@
 # Client and Loan Management System
 
+[![Build Status](https://travis-ci.org/python-aceleradev-squad5/LoanManagement-squad5.svg?branch=master)](https://travis-ci.org/python-aceleradev-squad5/LoanManagement-squad5)
+[![Maintainability](https://api.codeclimate.com/v1/badges/7b035a0fd6a1bb4d6d9a/maintainability)](https://codeclimate.com/github/python-aceleradev-squad5/LoanManagement-squad5/maintainability)
+
 ## Objective
 The main objective of this project is to create an API to manage clients and the loan payments control system from a fin-tech.
 
@@ -165,3 +168,40 @@ balance: outstanding debt of loan.
   "balance": 40
 }
 </pre></code>
+
+## How to contribute
+
+1. Clone the repository
+2. Create a virtualenv with Python 3.7
+3. Activate virtualenv
+4. Install the dependencies
+5. Configure the instance with .env
+6. Run the tests
+
+```console
+git clone git@github.com:python-aceleradev-squad5/LoanManagement-squad5.git
+cd LoanManagement-squad5
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp contrib/env-sample .env
+python manage.py test
+```
+
+
+## How to deploy
+
+1. Create an heroku instance
+2. Send settings to heroku
+3. Set a secure secret key for the instance
+4. Set DEBUG = False
+5. Send the code to heroku
+
+```console
+heroku create minhainstancia
+heroku config:push
+heroku config:set SECRET_KEY=`python contrib/secret_gen.py`
+heroku config:set DEBUG=False
+git push heroku master --force
+```
+

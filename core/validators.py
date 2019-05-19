@@ -15,3 +15,21 @@ def validate_amount(amount):
 def validate_cpf(cpf):
     if re.compile(r'^[\d]{11}$').match(cpf) is None or cpf == '00000000000':
         raise ValidationError('The given CPF is invalid.')
+
+    modulus = (
+        sum((i * int(element) for i, element in zip(range(10, 1, -1), cpf[:9]))) * 10
+    ) % 11
+    if modulus == 10 or modulus == 11:
+        modulus = 0
+    print(modulus)
+    if modulus != int(cpf[9]):
+        raise ValidationError('The given CPF is invalid.')
+
+    modulus = (
+        sum((i * int(element) for i, element in zip(range(11, 1, -1), cpf[:10]))) * 10
+    ) % 11
+    if modulus == 10 or modulus == 11:
+        modulus = 0
+    print(modulus)
+    if modulus != int(cpf[10]):
+        raise ValidationError('The given CPF is invalid.')

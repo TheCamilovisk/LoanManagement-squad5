@@ -40,4 +40,10 @@ class LoanCreateSerializer(ModelSerializer):
 class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
-        fields = ('loan', 'user', 'payment', 'date', 'amount')
+        fields = ('id', 'loan_id', 'user_id', 'payment', 'date', 'amount')
+
+class PaymentCreateSerializer(ModelSerializer):
+    class Meta:
+        model = Payment
+        fields = ('payment', 'date', 'amount')
+

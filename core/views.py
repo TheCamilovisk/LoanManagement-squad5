@@ -119,9 +119,10 @@ def balance(request, pk, format=None):
     if request.method == 'GET':
         try:
             loan = Loan.objects.get(pk=pk)
+            serializer = LoanSerializer(loan, many=False)
+            installment = float(serializer.data['installment'])
             payments_made = Payment.objects.filter(loan=pk).filter(payment='made')
-            balance_value = loan.term * loan.installment - len(payments_made) * loan.installment
-            context = {'balance': balance_value}
+            balance_value = loan.term * installment - len(payments_made) * installment
         except:
-            context = {'balance': 'Loan not found'}
-        return Response(context)
+            balance_value = 'Loan not found'
+        return Response({'balance': balance_value})

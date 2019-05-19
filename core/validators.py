@@ -1,7 +1,6 @@
 from django.core.exceptions import ValidationError
 from datetime import datetime
 
-# Validators for loans
 def validate_term(term):
     if term <= 0:
         raise ValidationError(
@@ -20,8 +19,7 @@ def validate_amount(amount):
             'Amount has to be a positive real number.'
         )
 
-
-# Validators for payments
+        
 def validate_payment(payment):
     if (len(payment) > 6):
         raise ValidationError('check if the type of payment is correct')

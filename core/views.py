@@ -17,6 +17,18 @@ from core.models import Client, Loan, Payment
 def index(request):
     return render(request, 'index.html')
 
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+from core.api.serializers import (
+    ClientSerializer,
+    LoanCreateSerializer,
+    LoanSerializer,
+    PaymentSerializer,
+)
+from core.models import Client, Loan, Payment
+
 
 @api_view(['GET', 'POST'])
 def loans(request, format=None):
@@ -90,6 +102,11 @@ def payments(request, pk, format=None):
                     serializer.save(user=request.user, loan=loan)              
                     return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(data, status=status.HTTP_400_BAD_REQUEST)
+        payments = Payment.objects.filter(loan_id=pk)
+        serializer = PaymentSerializer(payments, many=True)
+        return Response(serializer.data)
+    elif request.method == 'POST':
+        pass  # TODO
 
 
 @api_view(['GET'])

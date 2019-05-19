@@ -35,7 +35,7 @@ class Loan(Base):
     def __str__(self):
         return str(self.client) + " - " + str(self.date)
 
-
+      
 class Payment(Base):
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     user = models.ForeignKey(User, on_delete=models.PROTECT)

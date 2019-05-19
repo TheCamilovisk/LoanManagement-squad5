@@ -32,6 +32,7 @@ class Loan(models.Model):
     installment = MoneyField(
         decimal_places=2, max_digits=10, blank=True, null=True, default_currency='USD'
     )
+    paid = models.BooleanField(default=False)
 
     def __str__(self):
         return str(self.client) + " - " + str(self.date)
@@ -40,9 +41,9 @@ class Loan(models.Model):
 class Payment(models.Model):
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
-    payment = models.CharField(max_length=6)
-    date = models.DateTimeField(auto_now_add=True)
-    amount = models.DecimalField(decimal_places=2, max_digits=10)
+    payment = models.CharField(max_length=6,validators=[validators.validate_payment])
+    date = models.DateTimeField(validators=[validators.validate_date])
+    amount = models.DecimalField(decimal_places=2, max_digits=10, validators=[validators.validate_amount])
 
     def __str__(self):
         return str(self.date) + ': ' + str(self.loan)

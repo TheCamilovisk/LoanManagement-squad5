@@ -19,7 +19,7 @@ from core import views
 
 urlpatterns = [
     path('loans/', views.loans),
-    path('loans/<int:pk>/payments/', views.payments),
+    path('loans/<int:pk>/payments/', views.payments, name='payments'),
     path('loans/<int:pk>/balance/', views.balance, name='balance'),
     path('clients/', views.clients),
     path('admin/', admin.site.urls),

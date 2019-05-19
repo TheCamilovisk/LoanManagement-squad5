@@ -3,7 +3,7 @@ from datetime import datetime
 from django.test import TestCase 
 from django.urls import reverse, resolve 
 from rest_framework import status
-from api.views import payments, clients, loans
+from core.views import payments, clients, loans
 from django.contrib.auth.models import User
 from core.models import Client, Loan, Payment
 from core.serializers import ClientSerializer, LoanSerializer, PaymentSerializer

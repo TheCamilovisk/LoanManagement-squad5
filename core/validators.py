@@ -21,7 +21,6 @@ def validate_cpf(cpf):
     ) % 11
     if modulus == 10 or modulus == 11:
         modulus = 0
-    print(modulus)
     if modulus != int(cpf[9]):
         raise ValidationError('The given CPF is invalid.')
 
@@ -30,6 +29,10 @@ def validate_cpf(cpf):
     ) % 11
     if modulus == 10 or modulus == 11:
         modulus = 0
-    print(modulus)
     if modulus != int(cpf[10]):
         raise ValidationError('The given CPF is invalid.')
+
+
+def validate_telephone(telephone):
+    if re.compile(r'^[\d]{11}$').match(telephone) is None:
+        raise ValidationError('The given telephone is invalid.')

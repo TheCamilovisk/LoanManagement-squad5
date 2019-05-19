@@ -17,7 +17,7 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         self.client.login(username='camilo', password='uluyac')
         response = self.client.post('/clients/', data=client_data, format='json')
@@ -31,7 +31,7 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         self.client.login(username='camilo', password='uluyac')
         for key in client_data.keys():
@@ -49,14 +49,14 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         client2_data = {
             "name": "Angelica",
             "surname": "Huck",
             "email": "angeliquinha.huckinha@gmail.com",
             "telephone": "11983789585",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         self.client.login(username='camilo', password='uluyac')
         response = self.client.post('/clients/', data=client1_data, format='json')
@@ -71,7 +71,7 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         client2_data = {
             "name": "Angelica",
@@ -93,7 +93,7 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         self.client.login(username='camilo', password='uluyac')
 
@@ -102,7 +102,7 @@ class ClientTestCase(APITestCase):
         self.assertContains(response, 'cpf', status_code=status.HTTP_400_BAD_REQUEST)
         self.assertEqual(models.Client.objects.count(), 0)
 
-        client_data['cpf'] = "345987123879"  # cpf longer than the espected
+        client_data['cpf'] = "345987123769"  # cpf longer than the espected
         response = self.client.post('/clients/', data=client_data, format='json')
         self.assertContains(response, 'cpf', status_code=status.HTTP_400_BAD_REQUEST)
         self.assertEqual(models.Client.objects.count(), 0)
@@ -118,7 +118,7 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         self.client.login(username='camilo', password='uluyac')
 
@@ -158,7 +158,7 @@ class ClientTestCase(APITestCase):
             "surname": "Jones",
             "email": "felicity@gmail.com",
             "telephone": "11984345678",
-            "cpf": "34598712387",
+            "cpf": "34598712376",
         }
         self.client.login(username='camilo', password='uluyac')
 

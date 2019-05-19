@@ -142,11 +142,6 @@ class ClientTestCase(APITestCase):
         self.assertContains(response, 'email', status_code=status.HTTP_400_BAD_REQUEST)
         self.assertEqual(models.Client.objects.count(), 0)
 
-        client_data['email'] = "felicity@gmail.coma"  # domain with more characters than the espected after the dot.
-        response = self.client.post('/clients/', data=client_data, format='json')
-        self.assertContains(response, 'email', status_code=status.HTTP_400_BAD_REQUEST)
-        self.assertEqual(models.Client.objects.count(), 0)
-
         client_data['email'] = "felicity@gmail.c"  # domain with less characters than the espected after the dot.
         response = self.client.post('/clients/', data=client_data, format='json')
         self.assertContains(response, 'email', status_code=status.HTTP_400_BAD_REQUEST)

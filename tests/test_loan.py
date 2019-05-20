@@ -133,7 +133,7 @@ class LoanTestCase(APITestCase):
         }
         response = self.client.post('/loans/', data=loan_data10, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['rate'], 0.03)
+        self.assertEqual(round(response.data['rate'], 2), 0.03)
 
     def test_create_loan_bad_payer(self):
         loan_data11 = {
@@ -188,7 +188,7 @@ class LoanTestCase(APITestCase):
         }
         response = self.client.post('/loans/', data=loan_data12, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data['rate'], 0.09)
+        self.assertEqual(round(response.data['rate'], 2), 0.09)
 
     def test_create_loan_horrible_payer(self):
         loan_data13 = {

@@ -6,7 +6,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from core import views
-from core.models import Loan, Payment
+from core.models import Loan, Payment, Client
 
 
 class BalanceTest(APITestCase):
@@ -19,7 +19,7 @@ class BalanceTest(APITestCase):
             'surname': 'Jones',
             'email': 'felicity@gmail.com',
             'telephone': '11984345678',
-            'cpf': '34598712387',
+            'cpf': '34598712376',
         }
         self.client.post('/clients/', client_data, format='json')
 
@@ -30,17 +30,8 @@ class BalanceTest(APITestCase):
             'rate': 0.05
         }
         self.client.post('/loans/', new_loan, format='json')
+        self.assertEqual(Loan.objects.all().count(), 1)
 
-        # Post payment not implemented yet
-        '''
-        payment1 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 85.6,
-            'date': datetime.strptime('10042019', '%d%m%Y')
-        }
-        response = self.client.post('/loans/1/payment', payment1, format='json')
-        '''
         payment1 = Payment(
             loan=Loan.objects.get(pk=1),
             user=self.user,
@@ -49,7 +40,7 @@ class BalanceTest(APITestCase):
             amount=85.6,
         )
         payment1.save()
-
+        
         payment2 = Payment(
             loan=Loan.objects.get(pk=1),
             user=self.user,
@@ -59,14 +50,17 @@ class BalanceTest(APITestCase):
         )
         payment2.save()
 
-        loan_paid = {
-            'client': 1,
-            'amount': 1000,
-            'term': 12,
-            'rate': 0.05,
-        }
-        self.client.post('/loans/', loan_paid, format='json')
-
+        loan_paid = Loan(
+            user=self.user,
+            client=Client.objects.get(pk=1),
+            amount=1000,
+            term=12,
+            rate=0.5,
+            date=datetime.strptime('10122017', '%d%m%Y'),
+            installment=85.6
+        )
+        loan_paid.save()
+        
         for month in range(1, 13):
             p = Payment(
                 loan=Loan.objects.get(pk=2),
@@ -77,19 +71,24 @@ class BalanceTest(APITestCase):
             )
             p.save()
 
-        loan_with_no_payments = {
-            'client': 1,
-            'amount': 1000,
-            'term': 12,
-            'rate': 0.05,
-        }
-        self.client.post('/loans/', loan_with_no_payments, format='json')
+        loan_with_no_payments = Loan(
+            user=self.user,
+            client=Client.objects.get(pk=1),
+            amount=1000,
+            term=12,
+            rate=0.5,
+            date=datetime.strptime('10032019', '%d%m%Y'),
+            installment=85.6
+        )
+        loan_with_no_payments.save()
 
         self.response_with_payments = self.client.get('/loans/1/balance/')
         self.response_loan_paid = self.client.get('/loans/2/balance/')
         self.response_no_payments = self.client.get('/loans/3/balance/')
         self.response_loan_not_found = self.client.get('/loans/0/balance/')
         self.response_invalid_id = self.client.get('/loans/a/balance/')
+
+
 
     def test_url_resolves_balance_view(self):
         """URL /loans/1/balance/ must use view balance"""
@@ -118,7 +117,7 @@ class BalanceTest(APITestCase):
 
     def test_balance_loan_with_no_payments_value(self):
         """GET /loans/3/balance/ must contains 1027.20"""
-        self.assertContains(self.response_no_payments, 1027.32)
+        self.assertContains(self.response_no_payments, 1027.20)
 
     def test_balance_loan_not_found_status_code(self):
         """GET /loans/0/balance/ must return status code 200"""

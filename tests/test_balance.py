@@ -1,21 +1,32 @@
 from datetime import datetime
 
 from django.contrib.auth.models import User
-from django.urls import resolve
+from django.urls import resolve, reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
 from core import views
-from core.models import Loan, Payment, Client
+from core.models import Loan, Payment
 
 
 class BalanceTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username="john", email="john@doe.com", password="topsecretpwd"
+            username='squad5user', email='squad5user@gmail.com', password='squad5userpass'
         )
-        self.client.login(username="john", password="topsecretpwd")
+        url = reverse("api-jwt-auth")
+        resp = self.client.post(
+            url, {"username": "squad5user", "password": "squad5userpass"}, format="json"
+        )
+        token = resp.data["token"]
+        self.client.credentials(HTTP_AUTHORIZATION="JWT " + token)
 
+    def test_url_resolves_balance_view(self):
+        """URL /loans/1/balance/ must use view balance"""
+        view = resolve("/loans/1/balance/")
+        self.assertEquals(view.func, views.balance)
+
+    def test_balance_loan_paid(self):
         client_data = {
             "name": "Felicity",
             "surname": "Jones",
@@ -25,16 +36,42 @@ class BalanceTest(APITestCase):
         }
         self.client.post("/clients/", client_data, format="json")
 
-        new_loan = {"client": 1, "amount": 1000, "term": 12, "rate": 0.05}
-        self.client.post("/loans/", new_loan, format="json")
-        self.assertEqual(Loan.objects.all().count(), 1)
+        loan = {"client": 1, "amount": 1000, "term": 12, "rate": 0.05}
+        self.client.post("/loans/", loan, format="json")
+
+        for month in range(1, 13):
+            p = Payment(
+                loan=Loan.objects.get(pk=1),
+                user=self.user,
+                payment="made",
+                date=datetime.strptime(f"10{month}2018", "%d%m%Y"),
+                amount=Loan.objects.get(pk=1).installment,
+            )
+            p.save()
+
+        response = self.client.get("/loans/1/balance/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 0.00)
+
+    def test_balance_loan_two_payments(self):
+        client_data = {
+            "name": "Felicity",
+            "surname": "Jones",
+            "email": "felicity@gmail.com",
+            "telephone": "11984345678",
+            "cpf": "34598712376",
+        }
+        self.client.post("/clients/", client_data, format="json")
+
+        loan = {"client": 1, "amount": 1000, "term": 12, "rate": 0.05}
+        self.client.post("/loans/", loan, format="json")
 
         payment1 = Payment(
             loan=Loan.objects.get(pk=1),
             user=self.user,
             payment="made",
             date=datetime.strptime("10042019", "%d%m%Y"),
-            amount=85.6,
+            amount=Loan.objects.get(pk=1).installment,
         )
         payment1.save()
 
@@ -43,87 +80,38 @@ class BalanceTest(APITestCase):
             user=self.user,
             payment="made",
             date=datetime.strptime("10052019", "%d%m%Y"),
-            amount=85.6,
+            amount=Loan.objects.get(pk=1).installment,
         )
         payment2.save()
 
-        loan_paid = Loan(
-            user=self.user,
-            client=Client.objects.get(pk=1),
-            amount=1000,
-            term=12,
-            rate=0.5,
-            date=datetime.strptime("10122017", "%d%m%Y"),
-            installment=85.6,
-        )
-        loan_paid.save()
-
-        for month in range(1, 13):
-            p = Payment(
-                loan=Loan.objects.get(pk=2),
-                user=self.user,
-                payment="made",
-                date=datetime.strptime(f"10{month}2018", "%d%m%Y"),
-                amount=85.6,
-            )
-            p.save()
-
-        loan_with_no_payments = Loan(
-            user=self.user,
-            client=Client.objects.get(pk=1),
-            amount=1000,
-            term=12,
-            rate=0.5,
-            date=datetime.strptime("10032019", "%d%m%Y"),
-            installment=85.6,
-        )
-        loan_with_no_payments.save()
-
-        self.response_with_payments = self.client.get("/loans/1/balance/")
-        self.response_loan_paid = self.client.get("/loans/2/balance/")
-        self.response_no_payments = self.client.get("/loans/3/balance/")
-        self.response_loan_not_found = self.client.get("/loans/0/balance/")
-        self.response_invalid_id = self.client.get("/loans/a/balance/")
-
-    def test_url_resolves_balance_view(self):
-        """URL /loans/1/balance/ must use view balance"""
-        view = resolve("/loans/1/balance/")
-        self.assertEquals(view.func, views.balance)
-
-    def test_payment(self):
-        response = self.client.get("/loans/1/payments/")
+        response = self.client.get("/loans/1/balance/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 856.10)
 
-    def test_balance_loan_with_two_payments(self):
-        """GET /loans/1/balance/ must return status code 200"""
-        self.assertEqual(self.response_with_payments.status_code, status.HTTP_200_OK)
+    def test_balance_loan_without_payments(self):
+        client_data = {
+            "name": "Felicity",
+            "surname": "Jones",
+            "email": "felicity@gmail.com",
+            "telephone": "11984345678",
+            "cpf": "34598712376",
+        }
+        self.client.post("/clients/", client_data, format="json")
 
-    def test_balance_value(self):
-        """GET /loans/1/balance/ must contains 856.00"""
-        self.assertContains(self.response_with_payments, 856.00)
+        loan = {"client": 1, "amount": 1000, "term": 12, "rate": 0.05}
+        self.client.post("/loans/", loan, format="json")
 
-    def test_balance_loan_paid_status_code(self):
-        """GET /loans/2/balance/ must return status code 200"""
-        self.assertEqual(self.response_loan_paid.status_code, status.HTTP_200_OK)
+        response = self.client.get("/loans/1/balance/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, 1027.32)
 
-    def test_balance_loan_paid_value(self):
-        """GET /loans/2/balance/ must contains 0.00"""
-        self.assertContains(self.response_loan_paid, 0.00)
+    def test_balance_loan_not_found(self):
+        response = self.client.get("/loans/0/balance/")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertContains(response, "Loan not found")
 
-    def test_balance_loan_with_no_payments_value(self):
-        """GET /loans/3/balance/ must contains 1027.20"""
-        self.assertContains(self.response_no_payments, 1027.20)
-
-    def test_balance_loan_not_found_status_code(self):
-        """GET /loans/0/balance/ must return status code 200"""
-        self.assertEqual(self.response_loan_not_found.status_code, status.HTTP_200_OK)
-
-    def test_balance_loan_not_found_content(self):
-        """GET /loans/0/balance/ must contains Loan not found"""
-        self.assertContains(self.response_loan_not_found, "Loan not found")
-
-    def test_invalid_id(self):
-        """GET /loans/a/balance must return status code 404"""
+    def test_balance_loan_invalid(self):
+        response = self.client.get("/loans/a/balance/")
         self.assertEqual(
-            self.response_invalid_id.status_code, status.HTTP_404_NOT_FOUND
+            response.status_code, status.HTTP_404_NOT_FOUND
         )

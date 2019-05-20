@@ -1,5 +1,6 @@
 from django.core.exceptions import ValidationError
 import re
+from datetime import datetime
 
 
 def validate_term(term):
@@ -8,8 +9,8 @@ def validate_term(term):
 
 
 def validate_rate(rate):
-    if rate < 0.03:
-        raise ValidationError('Minimum rate value is 3%.')
+    if rate < 0.03 or rate > 1:
+        raise ValidationError('Rate should be between 0.03 and 1')
 
 
 def validate_amount(amount):

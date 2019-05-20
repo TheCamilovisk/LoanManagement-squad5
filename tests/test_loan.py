@@ -48,18 +48,19 @@ class LoanTestCase(APITestCase):
             'rate': 0.05,
         }
         response = self.client.post('/loans/', data=loan_data3, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        # self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, 'amount', status_code=status.HTTP_400_BAD_REQUEST)
 
     def test_create_loan_improper_term(self):
         loan_data4 = {
             'client': 1,
             'amount': 1000,
-            'term': -1,
+            'term': 0,
             'rate': 0.05,
         }
         response = self.client.post('/loans/', data=loan_data4, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
+        # self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, 'term', status_code=status.HTTP_400_BAD_REQUEST)
         loan_data5 = {
             'client': 1,
             'amount': 1000,
@@ -77,7 +78,7 @@ class LoanTestCase(APITestCase):
             'rate': 0,
         }
         response = self.client.post('/loans/', data=loan_data6, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, 'rate', status_code=status.HTTP_400_BAD_REQUEST)
 
         loan_data7 = {
             'client': 1,
@@ -86,7 +87,7 @@ class LoanTestCase(APITestCase):
             'rate': -0.05,
         }
         response = self.client.post('/loans/', data=loan_data7, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertContains(response, 'rate', status_code=status.HTTP_400_BAD_REQUEST)
 
         loan_data8 = {
             'client': 1,
@@ -111,7 +112,7 @@ class LoanTestCase(APITestCase):
             user=self.user,
             payment='made',
             date=datetime.strptime('10062019', '%d%m%Y'),
-            amount=50.31,
+            amount=51.88,
         )
         payment1.save()
 
@@ -120,7 +121,7 @@ class LoanTestCase(APITestCase):
             user=self.user,
             payment='made',
             date=datetime.strptime('10072019', '%d%m%Y'),
-            amount=50.31,
+            amount=51.88,
         )
         payment2.save()
 

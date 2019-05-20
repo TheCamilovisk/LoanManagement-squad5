@@ -1,12 +1,13 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
-from core.models import Loan
+from core.models import Loan, Payment
 from datetime import datetime
+
 
 class LoanTestCase(APITestCase):
     def setUp(self):
-        User.objects.create_user(
+        self.user = User.objects.create_user(
             username='squad5', email='squad5@gmail.com', password='5dauqs'
         )
         client_data = {
@@ -14,7 +15,7 @@ class LoanTestCase(APITestCase):
             'surname': 'Jones',
             'email': 'felicity@gmail.com',
             'telephone': '11984345678',
-            'cpf': '34598712387',
+            'cpf': '34598712376',
         }
         self.client.login(username='squad5', password='5dauqs')
         self.client.post('/clients/', data=client_data, format='json')
@@ -22,13 +23,13 @@ class LoanTestCase(APITestCase):
     def test_create_complete_loan(self):
         loan_data1 = {
             'client': 1,
-            'amount': 1000.0,
+            'amount': 1000,
             'term': 12,
             'rate': 0.05,
         }
         response = self.client.post('/loans/', data=loan_data1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(models.Loan.objects.count(), 1)
+        self.assertEqual(Loan.objects.count(), 1)
 
     def test_create_loan_improper_amount(self):
         loan_data2 = {
@@ -53,7 +54,7 @@ class LoanTestCase(APITestCase):
         loan_data4 = {
             'client': 1,
             'amount': 1000,
-            'term': 0,
+            'term': -1,
             'rate': 0.05,
         }
         response = self.client.post('/loans/', data=loan_data4, format='json')
@@ -105,20 +106,23 @@ class LoanTestCase(APITestCase):
         }
         self.client.post('/loans/', data=loan_data9, format='json')
 
-        payment_data1 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 50.31,
-            'date': datetime.strptime('18052019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data1, format='json')
-        payment_data2 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 50.31,
-            'date': datetime.strptime('18062019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data2, format='json')
+        payment1 = Payment(
+            loan=Loan.objects.get(pk=1),
+            user=self.user,
+            payment='made',
+            date=datetime.strptime('10062019', '%d%m%Y'),
+            amount=50.31,
+        )
+        payment1.save()
+
+        payment2 = Payment(
+            loan=Loan.objects.get(pk=1),
+            user=self.user,
+            payment='made',
+            date=datetime.strptime('10072019', '%d%m%Y'),
+            amount=50.31,
+        )
+        payment2.save()
 
         loan_data10 = {
             'client': 1,
@@ -139,34 +143,41 @@ class LoanTestCase(APITestCase):
         }
         self.client.post('/loans/', data=loan_data11, format='json')
 
-        payment_data3 = {
-            'loan': 1,
-            'payment': 'missed',
-            'amount': 50.31,
-            'date': datetime.strptime('18052019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data3, format='json')
-        payment_data4 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 50.31,
-            'date': datetime.strptime('18062019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data4, format='json')
-        payment_data5 = {
-            'loan': 1,
-            'payment': 'missed',
-            'amount': 50.31,
-            'date': datetime.strptime('18072019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data5, format='json')
-        payment_data6 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 50.31,
-            'date': datetime.strptime('18082019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data6, format='json')
+        payment3 = Payment(
+            loan=Loan.objects.get(pk=1),
+            user=self.user,
+            payment='missed',
+            date=datetime.strptime('18052019', '%d%m%Y'),
+            amount=50.31
+        )
+        payment3.save()
+
+        payment4 = Payment(
+            loan=Loan.objects.get(pk=1),
+            user=self.user,
+            payment='made',
+            date=datetime.strptime('18062019', '%d%m%Y'),
+            amount=50.31
+        )
+        payment4.save()
+
+        payment5 = Payment(
+            loan=Loan.objects.get(pk=1),
+            user=self.user,
+            payment='missed',
+            date=datetime.strptime('18072019', '%d%m%Y'),
+            amount=50.31
+        )
+        payment5.save()
+
+        payment6 = Payment(
+            loan=Loan.objects.get(pk=1),
+            user=self.user,
+            payment='made',
+            date=datetime.strptime('18082019', '%d%m%Y'),
+            amount=50.31
+        )
+        payment6.save()
 
         loan_data12 = {
             'client': 1,
@@ -187,48 +198,59 @@ class LoanTestCase(APITestCase):
         }
         self.client.post('/loans/', data=loan_data13, format='json')
 
-        payment_data7 = {
-            'loan': 1,
-            'payment': 'missed',
-            'amount': 150.94,
-            'date': datetime.strptime('18052019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data7, format='json')
-        payment_data8 = {
-            'loan': 1,
-            'payment': 'missed',
-            'amount': 150.94,
-            'date': datetime.strptime('18062019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data8, format='json')
-        payment_data9 = {
-            'loan': 1,
-            'payment': 'missed',
-            'amount': 150.94,
-            'date': datetime.strptime('18072019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data9, format='json')
-        payment_data10 = {
-            'loan': 1,
-            'payment': 'missed',
-            'amount': 150.94,
-            'date': datetime.strptime('18082019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data10, format='json')
-        payment_data11 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 150.94,
-            'date': datetime.strptime('18092019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data11, format='json')
-        payment_data12 = {
-            'loan': 1,
-            'payment': 'made',
-            'amount': 150.94,
-            'date': datetime.strptime('18102019', '%d%m%Y'),
-        }
-        self.client.post('/loans/1/payment', data=payment_data12, format='json')
+        payment7 = Payment(
+            user=self.user,
+            loan=Loan.objects.get(pk=1),
+            payment='missed',
+            amount=150.94,
+            date=datetime.strptime('18052019', '%d%m%Y')
+        )
+        payment7.save()
+
+        payment8 = Payment(
+            user=self.user,
+            loan=Loan.objects.get(pk=1),
+            payment='missed',
+            amount=150.94,
+            date=datetime.strptime('18062019', '%d%m%Y')
+        )
+        payment8.save()
+
+        payment9 = Payment(
+            user=self.user,
+            loan=Loan.objects.get(pk=1),
+            payment='missed',
+            amount=150.94,
+            date=datetime.strptime('18072019', '%d%m%Y')
+        )
+        payment9.save()
+
+        payment10 = Payment(
+            user=self.user,
+            loan=Loan.objects.get(pk=1),
+            payment='missed',
+            amount=150.94,
+            date=datetime.strptime('18082019', '%d%m%Y')
+        )
+        payment10.save()
+
+        payment11 = Payment(
+            user=self.user,
+            loan=Loan.objects.get(pk=1),
+            payment='made',
+            amount=150.94,
+            date=datetime.strptime('18092019', '%d%m%Y')
+        )
+        payment11.save()
+
+        payment12 = Payment(
+            user=self.user,
+            loan=Loan.objects.get(pk=1),
+            payment='made',
+            amount=150.94,
+            date=datetime.strptime('18102019', '%d%m%Y')
+        )
+        payment12.save()
 
         loan_data14 = {
             'client': 1,

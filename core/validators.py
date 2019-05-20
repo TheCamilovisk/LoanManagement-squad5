@@ -7,6 +7,11 @@ def validate_term(term):
         raise ValidationError('Number of terms has to be a positive integer number.')
 
 
+def validate_rate(rate):
+    if rate < 0.03:
+        raise ValidationError('Minimum rate value is 3%.')
+
+
 def validate_amount(amount):
     if amount <= 0:
         raise ValidationError('Amount has to be a positive real number.')

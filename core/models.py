@@ -20,8 +20,8 @@ class Loan(models.Model):
     amount = models.DecimalField(decimal_places=2, max_digits=10)
     term = models.IntegerField(validators=[validators.validate_term])
     rate = models.DecimalField(decimal_places=2, max_digits=10)
-    date = models.DateTimeField(auto_now_add=True)
-    installment = models.FloatField()
+    date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    installment = models.DecimalField(decimal_places=2, max_digits=10, default=0.00)
     paid = models.BooleanField(default=False)
 
     def __str__(self):
@@ -29,7 +29,7 @@ class Loan(models.Model):
 
 
 class Payment(models.Model):
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     payment = models.CharField(max_length=6,validators=[validators.validate_payment])

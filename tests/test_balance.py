@@ -12,7 +12,9 @@ from core.models import Loan, Payment
 class BalanceTest(APITestCase):
     def setUp(self):
         self.user = User.objects.create_user(
-            username='squad5user', email='squad5user@gmail.com', password='squad5userpass'
+            username="squad5user",
+            email="squad5user@gmail.com",
+            password="squad5userpass",
         )
         url = reverse("api-jwt-auth")
         resp = self.client.post(
@@ -112,6 +114,4 @@ class BalanceTest(APITestCase):
 
     def test_balance_loan_invalid(self):
         response = self.client.get("/loans/a/balance/")
-        self.assertEqual(
-            response.status_code, status.HTTP_404_NOT_FOUND
-        )
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)

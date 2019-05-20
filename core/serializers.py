@@ -19,7 +19,7 @@ class ClientSerializer(ModelSerializer):
 
     class Meta:
         model = Client
-        fields = ('name', 'surname', 'email', 'telephone', 'cpf')
+        fields = ("name", "surname", "email", "telephone", "cpf")
 
 
 class LoanSerializer(ModelSerializer):
@@ -37,16 +37,17 @@ class LoanCreateSerializer(ModelSerializer):
     amount = serializers.DecimalField(decimal_places=2, max_digits=10, validators=[validate_amount])
     class Meta:
         model = Loan
-        fields = ('client', 'amount', 'term', 'rate', 'date')
+        fields = ("client", "amount", "term", "rate", "date")
 
 
 class PaymentSerializer(ModelSerializer):
     class Meta:
         model = Payment
-        fields = ('id', 'loan_id', 'user_id', 'payment', 'date', 'amount')
+        fields = ("id", "loan_id", "user_id", "payment", "date", "amount")
+
 
 class PaymentCreateSerializer(ModelSerializer):
     class Meta:
         model = Payment
-        fields = ('payment', 'date', 'amount')
+        fields = ("payment", "date", "amount")
 

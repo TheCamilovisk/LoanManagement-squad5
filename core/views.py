@@ -111,7 +111,6 @@ def payments(request, pk, format=None):
             if serializer.is_valid():
                 date = request.data["date"]
                 amount = float(request.data["amount"])
-                payment = request.data["payment"]
                 dt = datetime.strptime(date, "%Y-%m-%dT%H:%M")
                 payd_month = Payment.objects.filter(
                     created__month=dt.month, created__year=dt.year

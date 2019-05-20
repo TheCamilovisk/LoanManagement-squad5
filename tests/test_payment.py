@@ -1,19 +1,10 @@
-import json
 from datetime import datetime
 from django.test import TestCase
-from django.urls import reverse, resolve
+from django.urls import reverse
 from rest_framework import status
-from core.views import payments, clients, loans
 from django.contrib.auth.models import User
 from core.models import Client, Loan, Payment
-from core.serializers import (
-    ClientSerializer,
-    LoanSerializer,
-    PaymentSerializer,
-    PaymentCreateSerializer,
-)
-import requests
-from rest_framework_jwt.views import obtain_jwt_token
+from core.serializers import PaymentSerializer, PaymentCreateSerializer
 from rest_framework.test import APIClient
 
 
@@ -67,21 +58,6 @@ class PaymentTest(TestCase):
             date=self.date,
         )
         l2.save()
-        # Create a payment
-        """
-        Payment.objects.create(
-            user=user, loan=l1, payment="made", date=self.date, amount=470.8
-        )
-        Payment.objects.create(
-            user=user, loan=l1, payment="made", date=self.date, amount=470.8
-        )
-        Payment.objects.create(
-            user=user, loan=l1, payment="missed", date=self.date, amount=85.6
-        )
-        Payment.objects.create(
-            user=user, loan=l2, payment="missed", date=self.date, amount=141.52
-        )
-        """
 
     def test_get_payments(self):
         url = reverse("api-jwt-auth")

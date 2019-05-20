@@ -183,9 +183,9 @@ def balance(request, pk, format=None):
         try:
             loan = Loan.objects.get(pk=pk)
             serializer = LoanSerializer(loan, many=False)
-            installment = float(serializer.data["installment"])
-            payments_made = Payment.objects.filter(loan=pk).filter(payment="made")
-            balance_value = loan.term * installment - len(payments_made) * installment
+            installment = serializer.data['installment']
+            payments_made = Payment.objects.filter(loan=pk).filter(payment='made')
+            balance_value = round(loan.term * installment - len(payments_made) * installment, 2)
         except:
             balance_value = "Loan not found"
         return Response({"balance": balance_value})

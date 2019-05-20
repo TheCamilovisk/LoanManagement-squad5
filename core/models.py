@@ -1,9 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from core import validators
-from djmoney.models.fields import MoneyField
-from djmoney.models.validators import MinMoneyValidator
-
 
 class Client(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -20,18 +17,11 @@ class Client(models.Model):
 class Loan(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     client = models.ForeignKey(Client, on_delete=models.PROTECT)
-    amount = MoneyField(
-        decimal_places=2,
-        max_digits=10,
-        validators=[MinMoneyValidator(1)],
-        default_currency='USD',
-    )
+    amount = models.DecimalField(decimal_places=2, max_digits=10)
     term = models.IntegerField(validators=[validators.validate_term])
-    rate = models.FloatField()
+    rate = models.DecimalField(decimal_places=2, max_digits=10)
     date = models.DateTimeField(auto_now_add=True)
-    installment = MoneyField(
-        decimal_places=2, max_digits=10, blank=True, null=True, default_currency='USD'
-    )
+    installment = models.FloatField()
     paid = models.BooleanField(default=False)
 
     def __str__(self):
@@ -39,6 +29,7 @@ class Loan(models.Model):
 
 
 class Payment(models.Model):
+    created = models.DateTimeField(auto_now_add=True)
     loan = models.ForeignKey(Loan, on_delete=models.PROTECT)
     user = models.ForeignKey(User, on_delete=models.PROTECT)
     payment = models.CharField(max_length=6,validators=[validators.validate_payment])

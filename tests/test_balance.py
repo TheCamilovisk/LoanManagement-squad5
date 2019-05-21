@@ -88,7 +88,7 @@ class BalanceTest(APITestCase):
 
         response = self.client.get("/loans/1/balance/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response, 856.10)
+        self.assertContains(response, 856.07)
 
     def test_balance_loan_without_payments(self):
         client_data = {
@@ -105,7 +105,7 @@ class BalanceTest(APITestCase):
 
         response = self.client.get("/loans/1/balance/")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertContains(response, 1027.32)
+        self.assertContains(response, 1027.29)
 
     def test_balance_loan_not_found(self):
         response = self.client.get("/loans/0/balance/")

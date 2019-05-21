@@ -80,6 +80,7 @@ def get_last_loan_id(client_id):
     except IndexError:
         return 0
 
+
 def is_last_loan_paid(client_id):
     last_loan_id = get_last_loan_id(client_id)
     if last_loan_id == 0:
@@ -96,6 +97,7 @@ def is_last_loan_paid(client_id):
             return True
         else:
             return False
+
 
 def calc_number_of_missed_payments(client_id):
     try:
@@ -219,18 +221,14 @@ def payments(request, pk, format=None):
 @api_view(["GET"])
 def balance(request, pk, format=None):
     if request.method == "GET":
-        return calc_balance(pk)
-
-
-def calc_balance(pk):
-    try:
-        loan = Loan.objects.get(pk=pk)
-        serializer = LoanSerializer(loan, many=False)
-        installment = float(serializer.data["installment"])
-        payments_made = Payment.objects.filter(loan=pk).filter(payment="made")
-        balance_value = round(
-            (loan.term * installment - len(payments_made) * installment), 2
-        )
-    except:
-        balance_value = "Loan not found"
-    return Response({"balance": balance_value})
+        try:
+            loan = Loan.objects.get(pk=pk)
+            serializer = LoanSerializer(loan, many=False)
+            installment = float(serializer.data["installment"])
+            payments_made = Payment.objects.filter(loan=pk).filter(payment="made")
+            balance_value = round(
+                (loan.term * installment - len(payments_made) * installment), 2
+            )
+        except:
+            balance_value = "Loan not found"
+        return Response({"balance": balance_value})

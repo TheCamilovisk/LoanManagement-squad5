@@ -171,7 +171,6 @@ def payments(request, pk, format=None):
                         or 0.00
                     )
                     loan_paid = round(loan_paid + amount, 2)
-                    print(loan_paid, loan_total)
                     if installment == amount:
                         if loan_paid > loan_total:
                             return Response(
@@ -191,7 +190,7 @@ def payments(request, pk, format=None):
                             try:
                                 serializer.save(user=request.user, loan=loan)
                                 return Response(
-                                    serializer.data, status=status.HTTP_201_CREATED
+                                    {"detail": "payment made successfully"}, status=status.HTTP_201_CREATED
                                 )
                             except:
                                 return Response(
@@ -203,9 +202,8 @@ def payments(request, pk, format=None):
                             {"detail:": "value of payment is incorrect"},
                             status=status.HTTP_400_BAD_REQUEST,
                         )
-
                     return Response(
-                        {"detail": "ainda validado"}, status=status.HTTP_201_CREATED
+                        {"detail": "payment made successfully"}, status=status.HTTP_201_CREATED
                     )
             else:
                 return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

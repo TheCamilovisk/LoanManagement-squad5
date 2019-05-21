@@ -86,8 +86,6 @@ class PaymentTest(TestCase):
         response = client.post(
             reverse("payments", kwargs={"pk": 1}), data=data_send, format="json"
         )
-        payments = Payment.objects.get(loan=1)
-        serializer = PaymentCreateSerializer(payments)
-        self.assertEqual(response.data, serializer.data)
+        self.assertEqual(response.data, {'detail': 'payment made successfully'})
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 

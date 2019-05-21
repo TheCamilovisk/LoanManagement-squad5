@@ -9,7 +9,9 @@ from core import models
 class ClientTestCase(APITestCase):
     def setUp(self):
         User.objects.create_user(
-            username='squad5user', email='squad5user@gmail.com', password='squad5userpass'
+            username='squad5user',
+            email='squad5user@gmail.com',
+            password='squad5userpass',
         )
         url = reverse("api-jwt-auth")
         resp = self.client.post(
@@ -29,6 +31,30 @@ class ClientTestCase(APITestCase):
         response = self.client.post('/clients/', data=client_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(models.Client.objects.count(), 1)
+
+    def test_get_clients(self):
+        clients_data = [
+            {
+                "name": "Felicity",
+                "surname": "Jones",
+                "email": "felicity@gmail.com",
+                "telephone": "11984345678",
+                "cpf": "34598712376",
+            },
+            {
+                "name": "Eduardo",
+                "surname": "Santos",
+                "email": "edu@ig.com.br",
+                "telephone": "19123585478",
+                "cpf": "24022125004",
+            },
+        ]
+        for client_data in clients_data:
+            self.client.post('/clients/', data=client_data, format='json')
+        response = self.client.get('/clients/')
+        print(response.data)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(models.Client.objects.count(), len(response.data))
 
     def test_create_complete_client(self):
         client_data = {
@@ -142,7 +168,11 @@ class ClientTestCase(APITestCase):
         self.assertContains(response, 'email', status_code=status.HTTP_400_BAD_REQUEST)
         self.assertEqual(models.Client.objects.count(), 0)
 
-        client_data['email'] = "felicity@gmail.c"  # domain with less characters than the espected after the dot.
+        client_data[
+            'email'
+        ] = (
+            "felicity@gmail.c"
+        )  # domain with less characters than the espected after the dot.
         response = self.client.post('/clients/', data=client_data, format='json')
         self.assertContains(response, 'email', status_code=status.HTTP_400_BAD_REQUEST)
         self.assertEqual(models.Client.objects.count(), 0)
@@ -158,15 +188,24 @@ class ClientTestCase(APITestCase):
 
         client_data['telephone'] = "119843456789"  # telephone longer than the espected.
         response = self.client.post('/clients/', data=client_data, format='json')
-        self.assertContains(response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertContains(
+            response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST
+        )
         self.assertEqual(models.Client.objects.count(), 0)
 
         client_data['telephone'] = "1198434569"  # telephone shorter than the espected.
         response = self.client.post('/clients/', data=client_data, format='json')
-        self.assertContains(response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertContains(
+            response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST
+        )
         self.assertEqual(models.Client.objects.count(), 0)
 
-        client_data['telephone'] = "119a43.56-8"  # telephone with unexpected characters.
+        client_data[
+            'telephone'
+        ] = "119a43.56-8"  # telephone with unexpected characters.
         response = self.client.post('/clients/', data=client_data, format='json')
-        self.assertContains(response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST)
+        self.assertContains(
+            response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST
+        )
         self.assertEqual(models.Client.objects.count(), 0)
+

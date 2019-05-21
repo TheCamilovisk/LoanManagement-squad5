@@ -25,7 +25,7 @@ Will not be able to receive a value above the total.
 ### POST /clients
 
 **Summary**
-Create a client in the system.
+Create a client in the system. 
 
 **Restrictions**
 - All fields are required;

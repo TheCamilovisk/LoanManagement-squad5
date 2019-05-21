@@ -74,8 +74,8 @@ class PaymentTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_post_payment(self):
-        data_send = {"payment": "made", "date": "2019-05-20T11:24", "amount": "85.60"}
-
+        date = datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M")
+        data_send = {"payment": "made", "date": f"{date}", "amount": "85.60"}
         url = reverse("api-jwt-auth")
         resp = self.client.post(
             url, {"username": "usuario", "password": "pass"}, format="json"

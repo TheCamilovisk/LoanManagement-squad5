@@ -13,11 +13,15 @@ from core.serializers import (
 )
 from core.models import Client, Loan, Payment
 
-
 @api_view(["GET", "POST"])
 def loans(request, format=None):
+
+    good_payer_delta = -0.02
+    bad_payer_delta = 0.04
+
     if request.method == "POST":
         client_id = request.data["client"]
+        rate = request.data["rate"]
         if is_last_loan_paid(client_id):
             client_status = calc_number_of_missed_payments(request.data["client"])
             if client_status == "first_loan":
@@ -29,35 +33,9 @@ def loans(request, format=None):
                         serializer.errors, status=status.HTTP_400_BAD_REQUEST
                     )
             elif client_status == "good_payer":
-                new_rate = str(Decimal(request.data["rate"]) - Decimal(0.02))
-                new_data = {
-                    "amount": request.data["amount"],
-                    "term": request.data["term"],
-                    "client": request.data["client"],
-                    "rate": new_rate,
-                }
-                serializer = LoanCreateSerializer(data=new_data)
-                if serializer.is_valid():
-                    return calc_installment(serializer, request)
-                else:
-                    return Response(
-                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                    )
+                return change_rate_based_on_history(rate, good_payer_delta, request)
             elif client_status == "bad_payer":
-                new_rate = str(Decimal(request.data["rate"]) + Decimal(0.04))
-                new_data = {
-                    "amount": request.data["amount"],
-                    "term": request.data["term"],
-                    "client": request.data["client"],
-                    "rate": new_rate,
-                }
-                serializer = LoanCreateSerializer(data=new_data)
-                if serializer.is_valid():
-                    return calc_installment(serializer, request)
-                else:
-                    return Response(
-                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                    )
+                return change_rate_based_on_history(rate, bad_payer_delta, request)
             elif client_status == "horrible_payer":
                 return Response(
                     {"error": "Loan denied due to client's payment history."},
@@ -72,6 +50,23 @@ def loans(request, format=None):
         loans = Loan.objects.all()
         serializer = LoanSerializer(loans, many=True)
         return Response(serializer.data)
+
+
+def change_rate_based_on_history(rate, delta, request):
+    new_rate = str(Decimal(rate) + Decimal(delta))
+    new_data = {
+        'amount': request.data['amount'],
+        'term': request.data['term'],
+        'client': request.data['client'],
+        'rate': new_rate,
+        }
+    serializer = LoanCreateSerializer(data=new_data)
+    if serializer.is_valid():
+        return calc_installment(serializer, request)
+    else:
+        return Response(
+            serializer.errors, status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 def get_last_loan_id(client_id):

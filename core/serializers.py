@@ -19,7 +19,7 @@ class ClientSerializer(ModelSerializer):
 
     class Meta:
         model = Client
-        fields = ("name", "surname", "email", "telephone", "cpf")
+        fields = ("id", "name", "surname", "email", "telephone", "cpf")
 
 
 class LoanSerializer(ModelSerializer):

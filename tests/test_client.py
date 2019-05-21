@@ -52,7 +52,6 @@ class ClientTestCase(APITestCase):
         for client_data in clients_data:
             self.client.post('/clients/', data=client_data, format='json')
         response = self.client.get('/clients/')
-        print(response.data)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(models.Client.objects.count(), len(response.data))
 

@@ -147,73 +147,56 @@ def payments(request, pk, format=None):
 
     if request.method == "POST":
         try:
-            loan = Loan.objects.get(id=pk)
+            loan = loan_exists(pk)
+            if loan is not False:
 
-            serializer = PaymentCreateSerializer(data=request.data)
-            if serializer.is_valid():
-                # date = request.data["date"]
-                amount = float(request.data["amount"])
-                # dt = datetime.strptime(date, "%Y-%m-%dT%H:%M")
-                # payd_month = Payment.objects.filter(
-                #     created__month=dt.month, created__year=dt.year
-                # )
-                # if payd_month:
-                #     return Response(
-                #         {"detail": "not possible to make two payment in the month"},
-                #         status=status.HTTP_400_BAD_REQUEST,
-                #     )
-                # else:
-                installment = round(float(loan.installment), 2)
-                term = round(loan.term, 2)
+                serializer = PaymentCreateSerializer(data=request.data)
+                if serializer.is_valid():
 
-                loan_total = round((installment * term), 2)
-                loan_paid = (
-                    Payment.objects.filter(loan_id=pk, payment="made").aggregate(
-                        Sum("amount")
-                    )["amount__sum"]
-                    or 0.00
-                )
-                loan_paid = round(float(loan_paid), 2) + round(float(amount), 2)
-
-                if installment == amount:
-                    if loan_paid > loan_total:
-                        return Response(
-                            {
-                                "detail": "it is not possible to pay a value above the loan amount"
-                            },
-                            status=status.HTTP_400_BAD_REQUEST,
-                        )
-                    elif loan_paid == loan_total:
-                        serializer.save(user=request.user, loan=loan)
-                        loan.paid = True
-                        loan.save()
-                        return Response(serializer.data, status=status.HTTP_201_CREATED)
-                    else:
-                        try:
-                            serializer.save(user=request.user, loan=loan)
-                            return Response(
-                                serializer.data, status=status.HTTP_201_CREATED
-                            )
-                        except:
-                            return Response(
-                                serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                            )
-                else:
-                    return Response(
-                        {"detail:": "value of payment is incorrect"},
-                        status=status.HTTP_400_BAD_REQUEST,
+                    amount = float(request.data["amount"])
+                    installment = round(float(loan.installment), 2)
+                    term = round(float(loan.term), 2)
+                    loan_total = round((installment * term), 2)
+                    loan_paid = (
+                        Payment.objects.filter(loan_id=pk, payment="made").aggregate(
+                            Sum("amount")
+                        )["amount__sum"]
+                        or 0.00
                     )
+                    loan_paid = round(float(loan_paid), 2) + round(float(amount), 2)
 
-                return Response(
-                    {"detail": "ainda validado"}, status=status.HTTP_201_CREATED
-                )
+                    if installment == amount:
+                        if loan_paid > loan_total:
+                            raise Exception(
+                                {
+                                    "detail": "it is not possible to pay a value above the loan amount"
+                                }
+                            )
+                        elif loan_paid == loan_total:
+                            serializer.save(user=request.user, loan=loan)
+                            loan.paid = True
+                            loan.save()
+                        else:
+                            serializer.save(user=request.user, loan=loan)
+                    else:
+                        raise Exception({"detail:": "value of payment is incorrect"})
+
+                else:
+                    raise Exception(serializer.errors)
             else:
-                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                raise Exception('loan not found')
 
-        except:
-            return Response(
-                {"detail": "loan not found"}, status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+def loan_exists(pk):
+    try:
+        loan = Loan.objects.get(id=pk)
+        return loan
+    except:
+        return False
 
 
 @api_view(["GET"])

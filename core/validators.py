@@ -19,25 +19,25 @@ def validate_amount(amount):
         raise ValidationError("Amount has to be a positive real number.")
 
 
-def validate_cpf(cpf):
-    if re.compile(r"^[\d]{11}$").match(cpf) is None or cpf == "00000000000":
-        raise ValidationError("The given CPF is invalid.")
+class CPFValidator:
+    pattern = re.compile(r"^[\d]{11}$")
 
-    modulus = (
-        sum((i * int(element) for i, element in zip(range(10, 1, -1), cpf[:9]))) * 10
-    ) % 11
-    if modulus == 10 or modulus == 11:
-        modulus = 0
-    if modulus != int(cpf[9]):
-        raise ValidationError("The given CPF is invalid.")
+    def __call__(self, cpf):
+        if self.pattern.match(cpf) is None or cpf == "00000000000":
+            raise ValidationError("The given CPF is invalid.")
 
-    modulus = (
-        sum((i * int(element) for i, element in zip(range(11, 1, -1), cpf[:10]))) * 10
-    ) % 11
-    if modulus == 10 or modulus == 11:
-        modulus = 0
-    if modulus != int(cpf[10]):
-        raise ValidationError("The given CPF is invalid.")
+        cpf = [int(element) for element in cpf]
+
+        for digit_i in (9, 10):
+            upper_b = digit_i + 1
+            modulus = (
+                sum((i * num for i, num in zip(range(upper_b, 1, -1), cpf[:digit_i])))
+                * 10
+            ) % 11
+            if modulus == 10 or modulus == 11:
+                modulus = 0
+            if modulus != cpf[digit_i]:
+                raise ValidationError("The given CPF is invalid.")
 
 
 def validate_telephone(telephone):

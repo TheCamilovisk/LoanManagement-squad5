@@ -146,8 +146,8 @@ def payments(request, pk, format=None):
     if request.method == "POST":
         try:
             loan = loan_exists(pk)
-            if loan is False:
-                raise Exception({'detail': 'loan not found'})
+            # if loan is False:
+            # raise Exception({'detail': 'loan not found'})
 
             serializer = PaymentCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -167,10 +167,9 @@ def payments(request, pk, format=None):
 
 def loan_exists(pk):
     try:
-        loan = Loan.objects.get(id=pk)
-        return loan
-    except Exception as e:
-        return False
+        return Loan.objects.get(id=pk)
+    except Loan.DoesNotExist:
+        raise Exception({'loan not found'})
 
 
 def payment_get(request, pk):

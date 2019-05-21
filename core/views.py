@@ -141,9 +141,7 @@ def clients(request, format=None):
 @api_view(["GET", "POST"])
 def payments(request, pk, format=None):
     if request.method == "GET":
-        payments = Payment.objects.filter(loan_id=pk)
-        serializer = PaymentSerializer(payments, many=True)
-        return Response(serializer.data)
+        return Response(payment_get(request, pk))
 
     if request.method == "POST":
         try:
@@ -153,28 +151,8 @@ def payments(request, pk, format=None):
 
             serializer = PaymentCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-            amount = float(request.data["amount"])
-            installment = round(float(loan.installment), 2)
-            term = round(float(loan.term), 2)
-            loan_total = round((installment * term), 2)
-            loan_paid = (
-                Payment.objects.filter(loan_id=pk, payment="made").aggregate(
-                    Sum("amount")
-                )["amount__sum"]
-                or 0.00
-            )
-            loan_paid = round(float(loan_paid), 2) + round(float(amount), 2)
 
-            if installment != amount:
-                raise Exception({"detail:": "value of payment is incorrect"})
-
-            if loan_paid > loan_total:
-                raise Exception(
-                    {
-                        "detail": "it is not possible to pay a value above the loan amount"
-                    }
-                )
-            elif loan_paid == loan_total:
+            if payment_calc(loan, request, pk):
                 serializer.save(user=request.user, loan=loan)
                 loan.paid = True
                 loan.save()
@@ -193,6 +171,35 @@ def loan_exists(pk):
         return loan
     except Exception as e:
         return False
+
+
+def payment_get(request, pk):
+    payments = Payment.objects.filter(loan_id=pk)
+    serializer = PaymentSerializer(payments, many=True)
+    return serializer.data
+
+
+def payment_calc(loan, request, pk):
+    amount = float(request.data["amount"])
+    installment = round(float(loan.installment), 2)
+    term = round(float(loan.term), 2)
+    loan_total = round((installment * term), 2)
+    loan_paid = (
+        Payment.objects.filter(loan_id=pk, payment="made").aggregate(Sum("amount"))[
+            "amount__sum"
+        ]
+        or 0.00
+    )
+    loan_paid = round(float(loan_paid), 2) + round(float(amount), 2)
+
+    if installment != amount:
+        raise Exception({"detail:": "value of payment is incorrect"})
+
+    if loan_paid > loan_total:
+        raise Exception(
+            {"detail": "it is not possible to pay a value above the loan amount"}
+        )
+    return loan_paid == loan_total
 
 
 @api_view(["GET"])

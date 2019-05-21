@@ -1,6 +1,7 @@
+from django.contrib.auth.models import User
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.contrib.auth.models import User
 
 from core import models
 
@@ -8,8 +9,14 @@ from core import models
 class ClientTestCase(APITestCase):
     def setUp(self):
         User.objects.create_user(
-            username='camilo', email='camilolgon@gmail.com', password='uluyac'
+            username='squad5user', email='squad5user@gmail.com', password='squad5userpass'
         )
+        url = reverse("api-jwt-auth")
+        resp = self.client.post(
+            url, {"username": "squad5user", "password": "squad5userpass"}, format="json"
+        )
+        token = resp.data["token"]
+        self.client.credentials(HTTP_AUTHORIZATION="JWT " + token)
 
     def test_create_client(self):
         client_data = {
@@ -19,11 +26,9 @@ class ClientTestCase(APITestCase):
             "telephone": "11984345678",
             "cpf": "34598712376",
         }
-        self.client.login(username='camilo', password='uluyac')
         response = self.client.post('/clients/', data=client_data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(models.Client.objects.count(), 1)
-        print(response.data)
 
     def test_create_complete_client(self):
         client_data = {
@@ -33,7 +38,6 @@ class ClientTestCase(APITestCase):
             "telephone": "11984345678",
             "cpf": "34598712376",
         }
-        self.client.login(username='camilo', password='uluyac')
         for key in client_data.keys():
             temporary_client_data = {**client_data}
             del temporary_client_data[key]
@@ -58,7 +62,6 @@ class ClientTestCase(APITestCase):
             "telephone": "11983789585",
             "cpf": "34598712376",
         }
-        self.client.login(username='camilo', password='uluyac')
         response = self.client.post('/clients/', data=client1_data, format='json')
         self.assertEqual(models.Client.objects.count(), 1)
         response = self.client.post('/clients/', data=client2_data, format='json')
@@ -80,7 +83,6 @@ class ClientTestCase(APITestCase):
             "telephone": "11983789585",
             "cpf": "97825380823",
         }
-        self.client.login(username='camilo', password='uluyac')
         response = self.client.post('/clients/', data=client1_data, format='json')
         self.assertEqual(models.Client.objects.count(), 1)
         response = self.client.post('/clients/', data=client2_data, format='json')
@@ -95,7 +97,6 @@ class ClientTestCase(APITestCase):
             "telephone": "11984345678",
             "cpf": "34598712376",
         }
-        self.client.login(username='camilo', password='uluyac')
 
         client_data['cpf'] = "3459871238"  # cpf shorter than the espected
         response = self.client.post('/clients/', data=client_data, format='json')
@@ -120,7 +121,6 @@ class ClientTestCase(APITestCase):
             "telephone": "11984345678",
             "cpf": "34598712376",
         }
-        self.client.login(username='camilo', password='uluyac')
 
         client_data['email'] = "@gmail.com"  # email without prefix
         response = self.client.post('/clients/', data=client_data, format='json')
@@ -155,7 +155,6 @@ class ClientTestCase(APITestCase):
             "telephone": "11984345678",
             "cpf": "34598712376",
         }
-        self.client.login(username='camilo', password='uluyac')
 
         client_data['telephone'] = "119843456789"  # telephone longer than the espected.
         response = self.client.post('/clients/', data=client_data, format='json')

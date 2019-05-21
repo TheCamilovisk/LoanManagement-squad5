@@ -3,7 +3,6 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db.models import Sum
 from decimal import Decimal
-from datetime import datetime
 from core.serializers import (
     ClientSerializer,
     LoanCreateSerializer,
@@ -12,6 +11,7 @@ from core.serializers import (
     PaymentCreateSerializer,
 )
 from core.models import Client, Loan, Payment
+
 
 @api_view(["GET", "POST"])
 def loans(request, format=None):
@@ -59,14 +59,12 @@ def change_rate_based_on_history(rate, delta, request):
         'term': request.data['term'],
         'client': request.data['client'],
         'rate': new_rate,
-        }
+    }
     serializer = LoanCreateSerializer(data=new_data)
     if serializer.is_valid():
         return calc_installment(serializer, request)
     else:
-        return Response(
-            serializer.errors, status=status.HTTP_400_BAD_REQUEST
-            )
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def get_last_loan_id(client_id):

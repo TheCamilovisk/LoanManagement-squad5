@@ -141,7 +141,7 @@ def clients(request, format=None):
 @api_view(["GET", "POST"])
 def payments(request, pk, format=None):
     if request.method == "GET":
-        payments = Payment.objects.filter(loan_id=pk).values()
+        payments = Payment.objects.filter(loan_id=pk)
         serializer = PaymentSerializer(payments, many=True)
         return Response(serializer.data)
 

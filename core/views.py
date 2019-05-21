@@ -26,12 +26,7 @@ def loans(request, format=None):
             client_status = calc_number_of_missed_payments(request.data["client"])
             if client_status == "first_loan":
                 serializer = LoanCreateSerializer(data=request.data)
-                if serializer.is_valid():
-                    return calc_installment(serializer, request)
-                else:
-                    return Response(
-                        serializer.errors, status=status.HTTP_400_BAD_REQUEST
-                    )
+                return is_serializer_valid(serializer, request)
             elif client_status == "good_payer":
                 return change_rate_based_on_history(rate, good_payer_delta, request)
             elif client_status == "bad_payer":
@@ -52,6 +47,13 @@ def loans(request, format=None):
         return Response(serializer.data)
 
 
+def is_serializer_valid(serializer, request):
+    if serializer.is_valid():
+        return calc_installment(serializer, request)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 def change_rate_based_on_history(rate, delta, request):
     new_rate = str(Decimal(rate) + Decimal(delta))
     new_data = {
@@ -61,10 +63,7 @@ def change_rate_based_on_history(rate, delta, request):
         'rate': new_rate,
     }
     serializer = LoanCreateSerializer(data=new_data)
-    if serializer.is_valid():
-        return calc_installment(serializer, request)
-    else:
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return is_serializer_valid(serializer, request)
 
 
 def get_last_loan_id(client_id):

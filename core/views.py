@@ -128,9 +128,7 @@ def calc_installment(serializer, request):
 @api_view(["GET", "POST"])
 def clients(request, format=None):
     if request.method == "GET":
-        clients = Client.objects.all()
-        serializer = ClientSerializer(clients, many=True)
-        return Response(serializer.data)
+        return Response(get_serialized_model_objects(Client, ClientSerializer))
     elif request.method == "POST":
         serializer = ClientSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -230,3 +228,9 @@ def balance(request, pk, format=None):
         except:
             balance_value = "Loan not found"
         return Response({"balance": balance_value})
+
+
+def get_serialized_model_objects(model_class, serializer_class):
+    objects = model_class.objects.all()
+    serializer = serializer_class(objects, many=True)
+    return serializer.data

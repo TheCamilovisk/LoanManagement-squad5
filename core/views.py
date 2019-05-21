@@ -17,7 +17,8 @@ from core.models import Client, Loan, Payment
 @api_view(["GET", "POST"])
 def loans(request, format=None):
     if request.method == 'POST':
-        if is_last_loan_paid(request.data['client']):
+        client_id = request.data['client']
+        if is_last_loan_paid(client_id):
             client_status = calc_number_of_missed_payments(request.data['client'])
             if client_status == 'first_loan':
                 serializer = LoanCreateSerializer(data=request.data)
@@ -59,7 +60,7 @@ def loans(request, format=None):
                     )
             elif client_status == 'horrible_payer':
                 return Response(
-                    serializer.errors, status=status.HTTP_400_BAD_REQUEST
+                    {'error': 'Loan denied due to client\'s payment history.'}, status=status.HTTP_400_BAD_REQUEST
                 )
         else:
             return Response(
@@ -72,12 +73,29 @@ def loans(request, format=None):
         return Response(serializer.data)
 
 
-def is_last_loan_paid(client_id):
+def get_last_loan_id(client_id):
     try:
         last_loan = Loan.objects.filter(client=client_id).order_by('-id')[0]
-        return last_loan.paid
+        return last_loan.id
     except IndexError:
+        return 0
+
+def is_last_loan_paid(client_id):
+    last_loan_id = get_last_loan_id(client_id)
+    if last_loan_id == 0:
         return True
+    else:
+        loan = Loan.objects.get(pk=last_loan_id)
+        serializer = LoanSerializer(loan, many=False)
+        installment = float(serializer.data["installment"])
+        payments_made = Payment.objects.filter(loan=last_loan_id).filter(payment="made")
+        balance_value = round(
+            (loan.term * installment - len(payments_made) * installment), 2
+        )
+        if balance_value == 0:
+            return True
+        else:
+            return False
 
 def calc_number_of_missed_payments(client_id):
     try:
@@ -89,7 +107,7 @@ def calc_number_of_missed_payments(client_id):
         elif number_of_missed_payments <= 3:
             return "bad_payer"
         else:
-            return "deny_loan"
+            return "horrible_payer"
     except IndexError:
         return "first_loan"
 

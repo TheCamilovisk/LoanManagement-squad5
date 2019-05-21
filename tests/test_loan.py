@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from core.models import Loan, Payment
 from datetime import datetime
+from django.urls import resolve, reverse
 
 
 class LoanTestCase(APITestCase):
@@ -10,6 +11,13 @@ class LoanTestCase(APITestCase):
         self.user = User.objects.create_user(
             username='squad5', email='squad5@gmail.com', password='5dauqs'
         )
+        url = reverse('api-jwt-auth')
+        resp = self.client.post(
+            url, {'username': 'squad5', 'password': '5dauqs'}, format='json'
+        )
+        token = resp.data['token']
+        self.client.credentials(HTTP_AUTHORIZATION='JWT ' + token)
+
         client_data = {
             'name': 'Felicity',
             'surname': 'Jones',

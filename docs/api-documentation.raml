@@ -31,6 +31,7 @@ types:
     discriminator: client_id
     properties: 
       client_id: integer
+      user_id: integer
       name: string
       surname: string
       email: string
@@ -38,6 +39,7 @@ types:
       cpf: string
     example:
       client_id: 1
+      user_id: 1
       name: "Felicity"
       surname: "Jones"
       email: "felicity@gmail.com"
@@ -48,31 +50,37 @@ types:
     discriminator: loan_id
     properties:
       loan_id: integer
+      user_id: integer
       client_id: integer
       amount: number
       term: number
       rate: number
       installment: number
       date: datetime
+      paid: boolean
     example:
       loan_id: 1
+      user_id: 1
       client_id: 1
       amount: 1000
       term: 12
       rate: 0.05
       installment: 85.60
       date: "2019-05-09T03:18:00Z"
+      paid: false
   Payment:
     type: object
     discriminator: payment_id
     properties:
       payment_id: integer
+      user_id: integer
       loan_id: integer
       payment: boolean
       date: datetime
       amount: number
     example:
       payment_id: 1
+      user_id: 1
       loan_id: 1
       payment: true
       date: "2019-05-10T04:18:00Z"
@@ -174,7 +182,7 @@ types:
               example: {"loan_id": 1, "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
 /loans:
   post:
-    description: Create a loan application. Loans are automatically accepted.
+    description: Create a loan application. Business rules are applied based on the client's payment history
     securedBy: JWT
     body:
       application/json:

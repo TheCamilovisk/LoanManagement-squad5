@@ -207,4 +207,3 @@ class ClientTestCase(APITestCase):
             response, 'telephone', status_code=status.HTTP_400_BAD_REQUEST
         )
         self.assertEqual(models.Client.objects.count(), 0)
-

@@ -1,10 +1,10 @@
 #%RAML 1.0
 title: Loan API
-baseUri: https://squad5.hero
+baseUri: https://loanmanagement-squad5.herokuapp.com/
 protocols: [ HTTP, HTTPS ]
 mediaType:  application/json
 description: API to manage the loan payments control system from a fintech
-version: 0.0.1
+version: 1.0.0
 securitySchemes:
   JWT:
     description: Authentic this to any method that needs a valid JWT to be set.
@@ -21,11 +21,17 @@ securitySchemes:
     settings:
       roles: []
 types:
+  Auth:
+    type: object
+    discriminator: token
+    properties:
+      token : string
   Client:
     type: object
     discriminator: client_id
     properties: 
       client_id: integer
+      user_id: integer
       name: string
       surname: string
       email: string
@@ -33,6 +39,7 @@ types:
       cpf: string
     example:
       client_id: 1
+      user_id: 1
       name: "Felicity"
       surname: "Jones"
       email: "felicity@gmail.com"
@@ -43,78 +50,110 @@ types:
     discriminator: loan_id
     properties:
       loan_id: integer
+      user_id: integer
       client_id: integer
       amount: number
       term: number
       rate: number
       installment: number
       date: datetime
+      paid: boolean
     example:
       loan_id: 1
+      user_id: 1
       client_id: 1
       amount: 1000
       term: 12
       rate: 0.05
       installment: 85.60
       date: "2019-05-09T03:18:00Z"
+      paid: false
   Payment:
     type: object
     discriminator: payment_id
     properties:
       payment_id: integer
+      user_id: integer
       loan_id: integer
       payment: boolean
       date: datetime
       amount: number
     example:
       payment_id: 1
+      user_id: 1
       loan_id: 1
       payment: true
       date: "2019-05-10T04:18:00Z"
       amount: 85.6
+/auth/token:
+  post:
+    description: Create a token in the system
+    body:
+      application/json:
+        username:
+          displayName: Username
+          type: string
+          description: Username
+          example: "squaduser"
+          required: true
+        password:
+          displayName: Password
+          type: string
+          description: Password
+          example: "squadpass"
+          required: true
+    responses:
+      201:
+        body:
+          application/json:
+            example: {"token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJ1c2VyX2lkIjoxLCJ1c2VybmFtZSI6Im1hcmNlbG8iLCJleHAiOjE1NTg3NjI5NTgsImVtYWlsIjoibWFyY2Vsby5taWxlcmlzQGdtYWlsLmNvbSJ9.XzzOy9yovI2mCLUuIWhAIxkI0XgldBeWgzmqPU3e4RQ"}
+      400:
+        body:
+          application/json:
+            example: {"message": "Unable to log in with provided credentials"}
 /clients:
   post:
     description: Create a client in the system.
     securedBy: JWT
     body:
       application/json:
-      properties:
-        name:
-          displayName: Client's Name
-          type: string
-          description: The client's name
-          example: "Felicity"
-          required: true
-        surname:
-          displayName: Client's Surname
-          type: string
-          description: The client's surname
-          example: "Jones"
-          required: true
-        email:
-          displayName: Client's E-mail
-          type: string
-          description: The client's email
-          example: "felicity@gmail.com"
-          required: true
-        telephone:
-          displayName: Client's Telephone
-          type: string
-          description: The client's telephone
-          example: "11984345678"
-          required: false
-        cpf:
-          displayName: Client's CPF
-          type: string
-          description: The client's CPF
-          example: "34598712387"
-          required: true
-      example:
-        name: "Felicity"
-        surname: "Jones"
-        email: "felicity@gmail.com"
-        telephone: "11984345678"
-        cpf: "34598712387"
+        properties:
+          name:
+            displayName: Client's Name
+            type: string
+            description: The client's name
+            example: "Felicity"
+            required: true
+          surname:
+            displayName: Client's Surname
+            type: string
+            description: The client's surname
+            example: "Jones"
+            required: true
+          email:
+            displayName: Client's E-mail
+            type: string
+            description: The client's email
+            example: "felicity@gmail.com"
+            required: true
+          telephone:
+            displayName: Client's Telephone
+            type: string
+            description: The client's telephone
+            example: "11984345678"
+            required: false
+          cpf:
+            displayName: Client's CPF
+            type: string
+            description: The client's CPF
+            example: "34598712387"
+            required: true
+        example:
+          name: "Felicity"
+          surname: "Jones"
+          email: "felicity@gmail.com"
+          telephone: "11984345678"
+          cpf: "34598712387"
     responses:
       201:
         body:
@@ -131,7 +170,7 @@ types:
       200:
         body:
           application/json:
-            example: {"client_id: 1, "name": "Felicity", "surname": "Jones", "email": "felicity@gmail.com", "telephone": "11984345678", "cpf": "34598712387"}
+            example: {"client_id": 1, "name": "Felicity", "surname": "Jones", "email": "felicity@gmail.com", "telephone": "11984345678", "cpf": "34598712387"}
   /{id}/loans:
     get:
       description: Retrieve all the loans of a specific client.
@@ -143,7 +182,7 @@ types:
               example: {"loan_id": 1, "amount": 1000, "term": 12, "rate": 0.05, "installment": 85.60, "date": "2019-05-09T03:18:00Z"}
 /loans:
   post:
-    description: Create a loan application. Loans are automatically accepted.
+    description: Create a loan application. Business rules are applied based on the client's payment history
     securedBy: JWT
     body:
       application/json:
@@ -217,9 +256,9 @@ types:
           properties:
             payment:
               displayName: Payment Status
-              type: boolean
-              description: Type of payment (True for made or False for missed)
-              example: true
+              type: string
+              description: Type of payment ("made" or "missed")
+              example: "made"
               required: true
             date:
               displayName: Date of Payment
@@ -235,21 +274,29 @@ types:
               example: 85.60
               required: true
           example:
-            payment: true
+            payment: "made"
             date: "2019-05-10T04:18:00Z"
             amount: 85.60
       responses:
         201:
           body:
             application/json:
-        401:
+              example: {"payment":"made", "amount":85.60, "date":"2019-05-10T04:18:00Z"}
+        400:
           body:
             application/json:
-              example: {"message": "Forbidden"}
-        404:
-          body:
-            application/json:
-              example: {"message": "Loan not found"}
+                examples:
+                    - not_found: 
+                        body : {"message":"Loan not found"}
+                        description: When loan ID not found
+                    - value_incorrect:
+                        body : {"message":"value of payment is incorrect"}
+                        description: When value of payment is different of installment
+                    - value_above:
+                        body : {"message":"it is not possible to pay a value above the loan"}
+                        description: When the amount to be paid is greater than the value of the loan
+                       
+        
     get:
       description: Retrieve all the payments for an specific loan.
       securedBy: JWT
@@ -257,15 +304,15 @@ types:
         200:
           body:
             application/json:
-              example: {"payment_id": 1, "payment": true, "date": "2019-05-07T04:18:00Z", "amount": 85.60}
+              example: {"payment_id": 1, "payment": "made", "date": "2019-05-07T04:18:00Z", "amount": 85.60}
   /{id}/balance:
     get:
       description: Get the volume of outstanding debt (i.e., debt yet to be paid) at some point in time.
       securedBy: JWT
       queryParameters:
         date:
-          description: "The access token provided by the authentication application"
-          example: date=2017-09-05
+          description: "Date limit for balance"
+          example: "2017-09-05"
           required: true
           type: string
       responses:

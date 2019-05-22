@@ -1,7 +1,6 @@
 ## Client and Loan Management System
 
 [![Build Status](https://travis-ci.org/python-aceleradev-squad5/LoanManagement-squad5.svg?branch=master)](https://travis-ci.org/python-aceleradev-squad5/LoanManagement-squad5)
-**Objective**
 [![Maintainability](https://api.codeclimate.com/v1/badges/7b035a0fd6a1bb4d6d9a/maintainability)](https://codeclimate.com/github/python-aceleradev-squad5/LoanManagement-squad5/maintainability)
 
 **Objective**

@@ -5,59 +5,45 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from core.models import Client, Loan, Payment
 from core.serializers import PaymentSerializer, PaymentCreateSerializer
+from core.validators import *
 from rest_framework.test import APIClient
 
 
 class PaymentTest(TestCase):
     def setUp(self):
         self.date = datetime.now()
+        date = datetime.strftime(self.date, "%Y-%m-%dT%H:%M")
+        self.data_send = {"payment": "made", "date": f"{date}", "amount": "85.60"}
 
         # Create user
-        user = User.objects.create_user(
+        self.user = User.objects.create_user(
             username="usuario", email="usuario@email.com", password="pass"
         )
-        user.save()
+        self.user.save()
 
         # Create a client
-        Client.objects.create(
-            user=user,
+        self.c1 = Client.objects.create(
+            user=self.user,
             name="Marcelo",
             surname="Mileris",
             email="marcelo.mileris@gmail.com",
             telephone="19981308867",
-            cpf="323.692.958-80",
+            cpf="32369295880",
         )
-        Client.objects.create(
-            user=user,
-            name="João",
-            surname="da Silva",
-            email="joaosilva@hotmail.com",
-            telephone="19874536958",
-            cpf="123.654.987-90",
-        )
+
         # Create a loan
-        c1 = Client.objects.get(name="Marcelo")
-        c2 = Client.objects.get(name="João")
-        l1 = Loan.objects.create(
-            user=user,
-            client=c1,
+        self.l1 = Loan.objects.create(
+            user=self.user,
+            client=self.c1,
             amount="1000",
             term=12,
             rate=0.05,
             installment=85.60,
             date=self.date,
         )
-        l1.save()
-        l2 = Loan.objects.create(
-            user=user,
-            client=c2,
-            amount="1500",
-            term=10,
-            rate=0.05,
-            installment=141.52,
-            date=self.date,
-        )
-        l2.save()
+        self.l1.save()
+        self.p1 = Payment.objects.create(user=self.user, loan=self.l1, amount=900, date=self.date, payment='made')
+        self.p1.save()
 
     def test_get_payments(self):
         url = reverse("api-jwt-auth")
@@ -74,7 +60,55 @@ class PaymentTest(TestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
     def test_post_payment(self):
-        date = datetime.strftime(datetime.now(), "%Y-%m-%dT%H:%M")
+        url = reverse("api-jwt-auth")
+        resp = self.client.post(
+            url, {"username": "usuario", "password": "pass"}, format="json"
+        )
+        token = resp.data["token"]
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION="JWT " + token)
+        response = client.post(
+            reverse("payments", kwargs={"pk": 1}), data=self.data_send, format="json"
+        )
+        self.assertEqual(len(response.data), 3)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+
+    def test_post_400(self):
+        url = reverse("api-jwt-auth")
+        resp = self.client.post(
+            url, {"username": "usuario", "password": "pass"}, format="json"
+        )
+        token = resp.data["token"]
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION="JWT " + token)
+        response = client.post(
+            reverse("payments", kwargs={"pk": 10}), data=self.data_send, format="json"
+        )
+        self.assertEqual(response.data, "{'loan not found'}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_value_incorrect(self):
+        self.date = datetime.now()
+        date = datetime.strftime(self.date, "%Y-%m-%dT%H:%M")
+        self.data_send = {"payment": "made", "date": f"{date}", "amount": "85.61"}
+        url = reverse("api-jwt-auth")
+        resp = self.client.post(
+            url, {"username": "usuario", "password": "pass"}, format="json"
+        )
+        token = resp.data["token"]
+        client = APIClient()
+        client.credentials(HTTP_AUTHORIZATION="JWT " + token)
+        response = client.post(
+            reverse("payments", kwargs={"pk": 1}), data=self.data_send, format="json"
+        )
+        self.assertEqual(response.data, "{'value of payment is incorrect'}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_value_above(self):
+        p1 = Payment.objects.create(user=self.user, loan=self.l1, amount=990, date=self.date, payment='made')
+        p1.save()
+        date = datetime.now()
+        date = datetime.strftime(date, "%Y-%m-%dT%H:%M")
         data_send = {"payment": "made", "date": f"{date}", "amount": "85.60"}
         url = reverse("api-jwt-auth")
         resp = self.client.post(
@@ -86,8 +120,35 @@ class PaymentTest(TestCase):
         response = client.post(
             reverse("payments", kwargs={"pk": 1}), data=data_send, format="json"
         )
-        payments = Payment.objects.get(loan=1)
-        serializer = PaymentCreateSerializer(payments)
-        self.assertEqual(response.data, serializer.data)
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data, "{'it is not possible to pay a value above the loan amount'}")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
+    def test_validator_payment(self):
+        try:
+            payment = 'missedd'
+            validate_payment(payment)
+        
+        except ValidationError as e:
+            self.assertEqual(e.message, "check if the type of payment is correct")
+
+        try:
+            payment = 'mace'
+            validate_payment(payment)
+        except ValidationError as e:
+            self.assertEqual(e.message, 'type of payment should by "made" or "missed"')
+
+    def test_validator_date(self):
+        try:
+            validate_date(datetime(2019,5,21,21,5,1,1))#'2019-05-20T21:05:00')            
+        except ValidationError as e:
+            self.assertEqual(e.message, 'date should by in format ISO 8601 "YYYY-mm-ddTH:Mz"') 
+
+        try:
+            validate_date(datetime(2019,5,19,21,5))
+        except ValidationError as e:
+            self.assertEqual(e.message, "the date can not be different from the current date") 
+
+        try:
+            validate_date(datetime(2019,5,19,21,5,1))
+        except ValidationError as e:
+            self.assertEqual(e.message, "the date can not be different from the current date") 

@@ -60,10 +60,7 @@ def validate_date(date):
         raise ValidationError('date should by in format ISO 8601 "YYYY-mm-ddTH:Mz"')
 
     # Validate the current date
-    try:
-        date = datetime.strptime(date, "%Y-%m-%dT%H:%Mz").date()
-        current = datetime.now().date()
-        if date != current:
-            raise ValidationError("the date can not be different from the current date")
-    except ValueError:
+    date = datetime.strptime(date, "%Y-%m-%dT%H:%Mz").date()
+    current = datetime.now().date()
+    if date != current:
         raise ValidationError("the date can not be different from the current date")

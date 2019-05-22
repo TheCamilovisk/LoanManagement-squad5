@@ -25,10 +25,7 @@ class LoanSerializer(ModelSerializer):
     class Meta:
         model = Loan
         fields = ('user', 'client', 'amount', 'term', 'rate', 'date', 'installment', 'paid')
-
-    def create(self, validated_data):
-        return Loan.objects.create(**validated_data)
-
+        
 
 class LoanCreateSerializer(ModelSerializer):
     term = serializers.IntegerField(validators=[validate_term])

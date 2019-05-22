@@ -142,9 +142,9 @@ class PaymentTest(TestCase):
     def test_validator_date(self):
         date = datetime.now()
         try:           
-            validate_date(datetime(date.year,date.month,date.day,date.hour,date.minute, date.second))           
+            validate_date(datetime(date.year,date.month,date.day,date.hour,date.minute, date.second))
         except ValidationError as e:
-            self.assertEqual(e.message, 'date should by in format ISO 8601 "YYYY-mm-ddTH:M"') 
+            self.assertEqual(e.message, 'date should by in format ISO 8601 "YYYY-mm-ddTH:M"')
 
         try:
             validate_date(datetime(date.year,date.month,date.day-1,date.hour,date.minute))  

@@ -34,8 +34,7 @@ class CPFValidator:
                 sum((i * num for i, num in zip(range(upper_b, 1, -1), cpf[:digit_i])))
                 * 10
             ) % 11
-            if modulus == 10 or modulus == 11:
-                modulus = 0
+            modulus = 0 if modulus == 10 or modulus == 11 else modulus
             if modulus != cpf[digit_i]:
                 raise ValidationError("The given CPF is invalid.")
 

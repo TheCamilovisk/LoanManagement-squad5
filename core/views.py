@@ -78,10 +78,7 @@ def is_last_loan_paid(client_id):
         balance_value = round(
             (loan.term * installment - len(payments_made) * installment), 2
         )
-        if balance_value == 0:
-            return True
-        else:
-            return False
+        return balance_value == 0
 
 
 def calc_number_of_missed_payments(client_id):
@@ -131,13 +128,13 @@ def payments(request, pk, format=None):
 
             serializer = PaymentCreateSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
-
-            if payment_calc(loan, request, pk):
-                serializer.save(user=request.user, loan=loan)
-                loan.paid = True
-                loan.save()
-            else:
-                serializer.save(user=request.user, loan=loan)
+            payment_calc(loan, request, pk, serializer)
+            # if payment_calc(loan, request, pk, serializer):
+            #     serializer.save(user=request.user, loan=loan)
+            #     # loan.paid = True
+            #     # loan.save()
+            # else:
+            #     serializer.save(user=request.user, loan=loan)
 
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
@@ -158,7 +155,7 @@ def payment_get(request, pk):
     return serializer.data
 
 
-def payment_calc(loan, request, pk):
+def payment_calc(loan, request, pk, serializer):
     amount = float(request.data["amount"])
     installment = round(float(loan.installment), 2)
     term = round(float(loan.term), 2)
@@ -178,7 +175,10 @@ def payment_calc(loan, request, pk):
         raise Exception(
             {"it is not possible to pay a value above the loan amount"}
         )
-    return loan_paid == loan_total
+    serializer.save(user=request.user, loan=loan)
+    if loan_paid == loan_total:        
+        loan.paid = True
+        loan.save()
 
 
 @api_view(["GET"])

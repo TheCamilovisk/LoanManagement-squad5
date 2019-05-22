@@ -4,6 +4,7 @@ from django.contrib.auth.models import User
 from core.models import Loan, Payment
 from datetime import datetime
 from django.urls import resolve, reverse
+from core.views import *
 
 
 class LoanTestCase(APITestCase):
@@ -38,6 +39,16 @@ class LoanTestCase(APITestCase):
         response = self.client.post('/loans/', data=loan_data1, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Loan.objects.count(), 1)
+
+        loan_data1 = {
+            'client': 1,
+            'amount': 1000,
+            'term': 12,
+            'rate': 0.05,
+        }
+        response = self.client.post('/loans/', data=loan_data1, format='json')
+        self.assertEqual(response.data, {"error": "The most recent loan is not fully paid."})
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_create_loan_improper_amount(self):
         loan_data2 = {
@@ -269,3 +280,14 @@ class LoanTestCase(APITestCase):
         }
         response = self.client.post('/loans/', data=loan_data14, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_is_last_loan_paid(self):
+       res = is_last_loan_paid(1)
+       self.assertEqual(True, res) 
+
+    def test_get_loan(self):
+        loan_data14 = {"client": 1,"amount": 300,"term": 2,"rate": 0.05}
+        self.client.post('/loans/', data=loan_data14, format='json')
+        response = self.client.get('/loans/')
+        self.assertEqual(len(response.data), 1)
+

@@ -6,7 +6,9 @@ from django.contrib.auth.models import User
 from core.models import Client, Loan, Payment
 from core.serializers import PaymentSerializer, PaymentCreateSerializer
 from core.validators import *
+from core.views import *
 from rest_framework.test import APIClient
+from django.http import HttpRequest
 
 
 class PaymentTest(TestCase):
@@ -138,17 +140,23 @@ class PaymentTest(TestCase):
             self.assertEqual(e.message, 'type of payment should by "made" or "missed"')
 
     def test_validator_date(self):
-        try:
-            validate_date(datetime(2019,5,21,21,5,1,1))#'2019-05-20T21:05:00')            
+        date = datetime.now()
+        try:           
+            validate_date(datetime(date.year,date.month,date.day,date.hour,date.minute, date.second))           
         except ValidationError as e:
-            self.assertEqual(e.message, 'date should by in format ISO 8601 "YYYY-mm-ddTH:Mz"') 
+            self.assertEqual(e.message, 'date should by in format ISO 8601 "YYYY-mm-ddTH:M"') 
 
         try:
-            validate_date(datetime(2019,5,19,21,5))
+            validate_date(datetime(date.year,date.month,date.day-1,date.hour,date.minute))  
         except ValidationError as e:
             self.assertEqual(e.message, "the date can not be different from the current date") 
 
-        try:
-            validate_date(datetime(2019,5,19,21,5,1))
-        except ValidationError as e:
-            self.assertEqual(e.message, "the date can not be different from the current date") 
+    def payment_calc(self):
+        date = datetime.now()
+        date = datetime.strftime(date, "%Y-%m-%dT%H:%M")
+        data_send = {"payment": "made", "date": f"{date}", "amount": "85.60"}
+        request = HttpRequest()
+        request.data = data_send
+        loan = self.l1        
+        res = payment_calc(loan, request, 1)
+        self.assertEqual(res, False)

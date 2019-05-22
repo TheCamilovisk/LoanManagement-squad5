@@ -11,7 +11,7 @@ def validate_term(term):
 
 def validate_rate(rate):
     if rate < 0.03 or rate > 1:
-        raise ValidationError('Rate should be between 0.03 and 1')
+        raise ValidationError("Rate should be between 0.03 and 1")
 
 
 def validate_amount(amount):
@@ -53,15 +53,15 @@ def validate_payment(payment):
 
 
 def validate_date(date):
-    date = date.strftime("%Y-%m-%dT%H:%Mz")
+    date = date.strftime("%Y-%m-%dT%H:%M")
     # Validate the format
-    try:
-        datetime.strptime(date, "%Y-%m-%dT%H:%Mz")
-    except ValueError:
-        raise ValidationError('date should by in format ISO 8601 "YYYY-mm-ddTH:Mz"')
+    REGEX = r"^(\d{4})-(\d{2})-(\d{2})T(\d{2})\:(\d{2})$"
+    res = re.match(REGEX, date)
+    if res is None:
+        raise ValidationError('date should by in format ISO 8601 "YYYY-mm-ddTH:M"')
 
     # Validate the current date
-    date = datetime.strptime(date, "%Y-%m-%dT%H:%Mz").date()
+    date = datetime.strptime(date, "%Y-%m-%dT%H:%M").date()
     current = datetime.now().date()
     if date != current:
         raise ValidationError("the date can not be different from the current date")

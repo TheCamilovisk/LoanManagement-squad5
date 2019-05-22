@@ -282,12 +282,11 @@ class LoanTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
     def test_is_last_loan_paid(self):
-       res = is_last_loan_paid(1)
-       self.assertEqual(True, res) 
+        res = is_last_loan_paid(1)
+        self.assertEqual(True, res)
 
     def test_get_loan(self):
-        loan_data14 = {"client": 1,"amount": 300,"term": 2,"rate": 0.05}
+        loan_data14 = {"client": 1, "amount": 300, "term": 2, "rate": 0.05}
         self.client.post('/loans/', data=loan_data14, format='json')
         response = self.client.get('/loans/')
         self.assertEqual(len(response.data), 1)
-

@@ -32,4 +32,3 @@ class Payment(models.Model):
     amount = models.DecimalField(
         decimal_places=2, max_digits=10, validators=[validators.validate_amount]
     )
-     return str(self.date) #+ ": " + str(self.loan)

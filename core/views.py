@@ -142,7 +142,7 @@ def payments(request, pk, format=None):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            return Response({str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
 
 
 def loan_exists(pk):
@@ -172,11 +172,11 @@ def payment_calc(loan, request, pk):
     loan_paid = round(float(loan_paid), 2) + round(float(amount), 2)
 
     if installment != amount:
-        raise Exception({"detail:": "value of payment is incorrect"})
+        raise Exception({"value of payment is incorrect"})         
 
     if loan_paid > loan_total:
         raise Exception(
-            {"detail": "it is not possible to pay a value above the loan amount"}
+            {"it is not possible to pay a value above the loan amount"}
         )
     return loan_paid == loan_total
 

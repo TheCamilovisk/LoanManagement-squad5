@@ -11,9 +11,6 @@ class Client(models.Model):
     telephone = models.CharField(max_length=15)
     cpf = models.CharField(unique=True, max_length=14)
 
-    def __str__(self):
-        return self.name + " " + self.surname
-
 
 class Loan(models.Model):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
@@ -25,9 +22,6 @@ class Loan(models.Model):
     installment = models.FloatField()
     paid = models.BooleanField(default=False)
 
-    def __str__(self):
-        return str(self.client) + " - " + str(self.date)
-
 
 class Payment(models.Model):
     created = models.DateTimeField(auto_now_add=True, null=True, blank=True)
@@ -38,6 +32,4 @@ class Payment(models.Model):
     amount = models.DecimalField(
         decimal_places=2, max_digits=10, validators=[validators.validate_amount]
     )
-
-    def __str__(self):
-        return str(self.date) + ": " + str(self.loan)
+     return str(self.date) #+ ": " + str(self.loan)
